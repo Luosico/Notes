@@ -55,11 +55,25 @@
 		zrange				根据元素在有序排列中所处的位置，来获取多个元素（包括成员和分数）
 		zrangebyscore		获取跟定分值范围内的所有元素
 		zrem				若存在，移除该成员
+		zcard				获取成员数	
+		zcount				指定区间的成员数
+		zincrby				对指点成员的分值加上increment
+		zscore				返回成员的分值
 
 - hash  
 	存储多个键值对之间的映射，存储的值为字符串或数字值，可以多数字值执行自增或自减操作
 
-		hset				在散列表里设置键值对
+		hset				在散列表里设置键值对，若已存在则更新值，否则新增
+		hsetnx				只有当键不存在时才设置键值对
+		hmset				设置多个键值对
 		hget				获取散列表里给定键的值
+		hmget				获取给定所有键的值
 		hgetall				获取所有键值对
 		hdel				在散列表中若该键存在则移除
+		hexists				查看键是否存在
+		hincrby				指定键的整数值加上增量increment
+		hincrbyfloat		指定键的浮点数值加上增量increment
+		hkeys				获取所有的键
+		hvals				获取所有键相对应的值
+		hlen				获取键的数量
+		
