@@ -16,11 +16,12 @@
 		renamenx			仅当 newkey 不存在时，将 key 改名为 newkey
 		move				将当前数据库的键移动到给定的数据库中
 		exists				检查键是否存在
-		expire				给键设置过期时间，多少秒后过期
+		expire				给键设置过期时间，多少秒后过期并自动删除
 		pexpire				设置键的过期时间，以毫秒计
 		expireat			设置过期时间，采用Unix时间戳，以秒计
 		pexpireat			设置键的过期时间戳，以毫秒计
 		persist				移除键的过期时间
+		sort				根据给定的选项，进行排序，并返回结果，默认升序
 		
 - String
 		
@@ -88,8 +89,8 @@
 		zrevrangebysocore	同上，安装分值从大到小排列
 		zremrangebyrank		移除排名介于start和stop之间的所有成员
 		zremrangebyscore	移除分值介于min和max之间的所有成员
-		zinterstore			执行类似set的交集运算
-		zunionstore			执行类似set的并集运算
+		zinterstore			执行类似set的交集运算，对于相同的成员，新分值为它们分值之和
+		zunionstore			执行类似set的并集运算，对于相同的成员，新分值为它们分值的最小值
 
 - hash  
 	存储多个键值对之间的映射，存储的值为字符串或数字值，可以多数字值执行自增或自减操作
@@ -107,4 +108,75 @@
 		hkeys				获取所有的键
 		hvals				获取所有键相对应的值
 		hlen				获取键的数量
+
+## 3、发布与订阅（pub/sub）
+- 对象
+	- 订阅者（listener）: 负责订阅频道（channel）
+	- 发送者（publisher）：负责向频道发送二进制字符串消息（binary string message）
+	- 频道（channel）
+			
+			subscribe		订阅一个或多个频道
+			unsubscibe		退订给定的一个或多个频道，如果执行时没有给定任何频道，那么退订所有频道
+			publish			向给定频道发送消息
+			psubsribe		订阅与给定模式相匹配的所有频道
+			punsubscribe	退订给定的模式，若没有给定模式，则退订所有模式
+
+## 4、事务
+
+	multi					标记一个事务块的开始
+	exec					执行事务块内的命令
+	discard					取消事务，放弃执行事务块内的所有命令
+	watch					监视一个或多个key，如果在事务执行之前key被其他命令所改动，那么事务将被打断
+	unwatch					取消watch命令对key的监视
+
+Java中Redis事务的实现：
+
+		//开启事务
+        Transaction transaction = jedis.multi();
+        //执行结果
+        Response response = transaction.get("str");
+        //提交事务,List存储事务过程中所有的返回结果
+        List<Object> list = transaction.exec();
+        //必须在事务提交后才能获取Response结果
+        System.out.println(response.get());
+        
+        System.out.println(list.size());
+
+        for(Object o : list){
+            System.out.println(o);
+        }
 		
+# 5、键的过期时间
+- 通过Redis的过期时间（expiration）特性来让一个键在给定的时限（timeout）之后自动删除
+- 键的过期命令只能为整个键设置过期时间，而没办法为键里面的单个元素设置过期时间
+		
+		expire				给键设置过期时间，多少秒后过期并自动删除
+		pexpire				设置键的过期时间，以毫秒计
+		expireat			设置过期时间，采用Unix时间戳，以秒计
+		pexpireat			设置键的过期时间戳，以毫秒计
+		persist				移除键的过期时间
+		ttl					查看给定键距离过期时间还有多少秒
+		pttl				查看给定键距离过期时间还有多少毫秒
+
+# 6、持久化
+### 方式： ###
+- 快照（snapshotting）:将存在于某一时刻的所有数据都写入硬盘里面
+- 只追加文件（AOF）：在执行写命令时，将被执行的写命令复制到硬盘里面
+	
+### 快照
+- 快照将被写入 dbfilename 选项指定的文件里，并存储在 dir 选项指定的路径上面
+- 缺点：Redis、系统和硬件中任意一个崩溃，将会丢失最近一次创建快照之后写入的所有数据
+
+		save				在快照创建完毕之前将不再响应任何其他命令
+		bgsave				Redis会创建一个子进程来负责将快照写入硬盘，父进程则继续处理命令请求
+		save配置（配置文件中	比如save 60 1000 	从最后一次创建快照之后算起，当“60秒之内有1000此写入”这个条件满足，自动触发bgsave命令
+		shutdown/term		执行save命令，阻塞所有客户端，并在save命令执行完毕后关闭服务器
+		sync				Redis服务器之间使用该命令，如果主服务器目前没有在执行bgsave，
+							或者主服务器并非刚刚执行完bgsave，那么主服务器就会执行bgsave
+### AOF
+- 通过在配置文件的appendonly yes 配置选项来打开
+		
+		always				每个写命令都要同步写入硬盘，这样会严重降低Redis的速度
+		everysec			每秒执行一次同步，显式地将多个命令同步到硬盘
+		no					让操作系统来决定应该何时进行同步
+		bgrewriteaof		通过移除AOF文件中的冗余命令来重写AOF文件，是AOF文件的体积尽可能的小
