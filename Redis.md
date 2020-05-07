@@ -22,6 +22,7 @@
 		pexpireat			设置键的过期时间戳，以毫秒计
 		persist				移除键的过期时间
 		sort				根据给定的选项，进行排序，并返回结果，默认升序
+		debug object		查看特定对象的相关信息，查看是否是压缩列表
 		
 - String
 		
