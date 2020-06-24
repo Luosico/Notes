@@ -1,6 +1,6 @@
-# <center><font size=7>Java NIO</font></center>
-----
-## 1、 通道 Channel<font size=3>
+# 									<font size=7>Java NIO</font>
+
+## 1、 通道 Channel
 - 作用：通道将缓冲区的数据块移入或移出到各种I/O源，如文件、socket、数据报等。
 - 与流的区别：
 	- 流是基于字节的，按顺序一个字节接一个字节地传动数据，处于性能考虑，也可以传送字节数组，仍符合
@@ -19,10 +19,10 @@
 			//阻塞模式下，阻塞直到连接建立成功
 			//非阻塞模式下，会立即返回，甚至在连接建立之前就会返回
 			channel.connect();
-
+		
 			//非阻塞模式下，必须调用这个方法，若连接建立成功返回ture,否则false。阻塞模式立即返回true
 			channel.finishConnect();
-
+		
 			//连接打开时返回true
 			channel.isConnected()
 			//连接仍在建立但尚未打开时返回true
@@ -43,7 +43,7 @@
 			//聚集：将多个缓冲区的数据写入到一个通道
 			channel.write(ByteBuffer[] buffers);
 			channel.write(ByteBuffer[] buffers,int offset,int length);
-
+		
 			//关闭
 			channel.close();
 			//判断通道是否关闭
@@ -65,7 +65,8 @@
 			//非阻塞模式下,没有入站连接立即返回 null
 			SocketChannel socketChannel = serverChannel.accept();
 
-##2、异步通道 AsybchronousChannel
+## 2、异步通道 AsybchronousChannel
+
 - 异步通道类：AsybchronousSocketChannel、AsybchronousServerSocketChannel等
 - 差别：异步通道会立即返回，甚至在I/O完成之前就会返回，所读写的数据会由Future或CompletionHandle进一步处理，connect()和accept()方法也会异步执行，并返回Future。这里不使用选择器
 
@@ -78,46 +79,49 @@
 			
 			//从连接读取
 			Future<Integer> future = socketChannel.read(buffer);
-
+		
 			//做其他工作
-
+		
 			//等待读取完成
 			future.get();
-
+		
 			//回绕并排空缓冲区
 			buffer.flip();
 			//将通道转换成标准输出流
 			WritableByteChannel out = Channels.newChannel(System.out);
 			out.write(buffer);
 
-##3、Channels类
+## 3、Channels类
+
 - 作用：简单的工具类，可以将传统的基于I/O的流、阅读器和书写器包装在通道中，也可以从通道中转换出来
 
 			//获取Inpustream
 			InputStream in = Channels.newInputStream(channel);
 
-##4、选择器 Selector
+## 4、选择器 Selector
+
 - 作用：能够选择读写时不阻塞的Socket,通过将不同的通道注册到一个Selector对象，每个通道都将分配有一个SelectionKey
 		
 		//获取Selector对象
 		Selector selector = Selector.open();
 		
+	
 		//在通道绑定Selector
 		channel.register(selector,SelectionKey.OP_ACCEPT | 	SelectionKey.OP_CONNECT);
 		//第三个参数是附件，通常用于存储连接的状态
 		channel.register(selector,SelectionKey.OP_WRITE,Object attach);
-
+		
 		//非阻塞选择，如果当前没有准备好要处理的连接，立即返回
 		selector.selectNow(); //return int;
-
+		
 		//阻塞选择，一直等待直到至少有一个注册的通道准备好可以进行处理
 		selector.select(); //return int;
 		//返回0前只等待不超过timeout毫秒
 		selector.select(long timeout);
-
+		
 		//当直到有通道已经准备好，获取就绪通道
 		Set<SelectionKey> set = selector.selectedKeys();
-
+		
 		//关闭选择器
 		selector.close();
 - SelectionKey
@@ -135,11 +139,12 @@
 			selectionKey.attach(buffer);
 			//获取附件 attachment
 			Object attacher = selectionKey.attachment();
-
+		
 			//撤销通道的注册
 			selectionKey.cancle();
 
-##5、缓冲区 Buffer
+## 5、缓冲区 Buffer
+
 - 除boolean外，java所有基本数据类型都有特定的Buffer子类，如：ByteBuffer、CharBuffer等
 - 每个缓冲区记录信息的4个关键部分：
 	- 位置（position）
@@ -152,7 +157,7 @@
 		- 缓冲区中客户端指定的索引
 		- mark()：将标记设置为当前位置
 		- reset（）：将当前位置设置为所标记的位置  
-		
+	
 - 公共方法
 	- clear():将位置设为0，并将限度设置为容量，实际并没有删除数据，还能读取
 	- rewind()：将位置设为0，但不改变限度
@@ -169,6 +174,7 @@
 				ByteBuffer buffer = ByteBuffer.allocate(100);
 				byte[] array = buffer.array();
 	- allocatDirect()
+		
 		- 直接分配，不为缓冲区创建后备数组
 	- wrap()
 		- 常用与输出		
@@ -182,7 +188,7 @@
 
 		buffer.get(byte[] dst);
 		buffet.get(byte[] dst,int offset,int length);	//从缓冲区中向数组的offset位置写入length长度的数据
-
+		
 		buffer.put(byte[] array);
 		buffer.put(byte[] array,int offset,int length);	//从数组的offset位置读取length长度到缓冲区
 - 改变字节顺序(默认为大端模式，big-endian)
