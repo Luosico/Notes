@@ -51,8 +51,8 @@ pull：把远程仓库拉倒本地仓库
 
 
 ​	
-	git pull origin master 		将远程最新代码更新到本地，本地之前新增的不会被删除
-	
+​	git pull origin master 		将远程最新代码更新到本地，本地之前新增的不会被删除
+​	
 	git remote add origin git@github.com:Luosico/gitTest.git	本地添加一个远程仓库，origin为自定义远程仓库名字，可以任意取
 	
 	git remote -v				查看当前项目有哪些远程仓库

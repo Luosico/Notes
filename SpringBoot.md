@@ -23,7 +23,25 @@
 - 配置idea
 
   在 File -> setting -> Build,Execuation,Deployment -> Compiler 中勾选 Builder project automatically
-  
+
+
+
+### Spring事务
+
+- **隔离级别**
+  - isolation_default								同数据库事务隔离级别
+  - isolation_read_uncommited            未提交读，脏数据
+  - isolation_read_commited                  提交读，不可重复读
+  - isolation_repeatable_read                 可重复读，幻读
+  - isolation_serializable                           可串行化
+- **传播行为**
+  - required                当前没有，就新建事务，若已存在事务，加入这个事务
+  - supports                支持当前事务。如果当前没有事务，就以非事务方式运行
+  - mandatory            使用当前事务。如果当前没有事务，就抛出异常
+  - requires_new        新建事务。如果当前存在事务，就把当前事务挂起
+  - not_supported     以非事务方式执行。若果当前存在事务，就把当前事务挂起
+  - never                     以非事务方式执行。若果存在当前事务，抛出异常
+  - nested                   
 
 
 
@@ -37,8 +55,8 @@
       - 原型`Prototype` 每次注入或通过Spring应用上下文获取的时候，都会创建一个新的bean实例
       - 会话`Session` 在Web应用中，为每个会话创建一个bean实例
       - 请求`Request` 在Web应用中，为每个请求创建一个bean实例
-    
-    
+
+​    
 
 ### 消息转换器（`HttpMessageConverter`）
 
