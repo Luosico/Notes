@@ -1,6 +1,6 @@
 # Oracle
 
-### 不同于MySQL的语句
+### 1、不同于MySQL的语句
 
 - ####  拼接列和字符串
 
@@ -24,13 +24,66 @@
 
 
 
-### 创建数据库
+### 2、创建数据库
+
+​	**Oracle其实没有数据库database这一概念，实际上是表空间，是通过实例给每个用户分配不同的表空间，这样的表空间就是每个用户的数据库。所以直接创建表空间和对应的用户就行了**
+
+​	oracle在创建数据库的时候要对应一个用户，数据库和用户一般一一对应，mysql和sql server 直接通过create databse “数据库名” 就可以直接创建数据库了，而oracle创建一个数据库需要以下三个步骤：
+
+**1、创建两个数据库文件：`test.dbf`和`test_temp.dbf`** **(文件名字自定义)**
+
+```sql
+create tableSpace test logging dataFile 'E:\Oracle\oradata\LUOSICO\test.dbf' size 100M autoExtend on next 32M maxSize 500M extent management local;
+
+create temporary tableSpace test_temp tempFile 'E:\Oracle\oradata\LUOSICO\test_temp.dbf' size 100M autoExtend on next 32M maxSize 500M extent management local;
+```
+
+**2、创建用户，并与上面创建的文件形成映射关系（这里用户名为`c##lkf`，密码为`123456`）**
+
+```sql
+create user c##lkf identified by 123456 default tableSpace test temporary tableSpace test_temp;
+# 用户名必须以c##开头
+```
+
+​		容器数据库创建新用户并分配表空间时必须在没有PDB的情况下进行或PDB与CDB有相同的表空间的时候进行，否则会报错。如果是在PDB与CDB 有相同表空间的情况下给CDB用户分配表空间，则分配CDB的表空间给用户PDB的表空间并不受影响。而且，CDB用户必须以‘C##’为开头，否则创建不了
+
+```sql
+show pdbs;  #查看pdb
+
+#转换容器到pdb
+alter session set container=pdb1;
+#在pdb中创建与cdb同名的表空间
+create tablespace test datafile 'E:\Oracle\oradata\LUOSICO\pdb_test.dbf' size 2m;
+create temporary tableSpace test_temp tempFile 'E:\Oracle\oradata\LUOSICO\test_temp.dbf' size 2m;
+#回到cdb容器
+alter session set container=cdb$root;
+```
+
+​		Oracle 12c 引入了CDB(container database)与PDB(plugable database，可插拔数据库 )的概念，**一个CDB可以承载多个PDB**，在这之前，实例与数据库是一对一或多对一关系（RAC）：即一个实例只能与一个数据库相关联，数据库可以被多个实例所加载。而实例与数据库不可能是一对多的关系。当进入ORACLE 12C后，实例与数据库可以是一对多的关系
+
+**3、给用户添加权限**
+
+```
+grant connect,resource,dba to c##lkf ;
+grant create session to c##lkf ;
+commit;
+```
+
+#### 删除数据库
+
+```sql
+drop tableSpace test including contents and dataFiles;
+```
+
+#### 删除用户
+
+```SQL
+drop user lkf cascade;
+```
 
 
 
-
-
-### 数据类型
+### 3、数据类型
 
 #### number
 ​	 `number[precision [, scale ]]  precision为精度，scale为小数位数（尺度）`
