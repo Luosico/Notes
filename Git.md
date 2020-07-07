@@ -40,21 +40,18 @@
 				--mixed(默认)	重置位置的同时，只保留Working Tree工作目录的內容，但会将Index暂存区和Repository中的內容更改和reset目标节点一致
 
 ## 在线操作
-push：把本地仓库推到远程仓库
-pull：把远程仓库拉倒本地仓库
+**push：把本地仓库推到远程仓库**
+**pull：把远程仓库拉倒本地仓库**
 
 	git clone git@github.com:Luosico/gitTest.git    从远程仓库下载一个仓库到本地，本地变成一个文件夹，不需要再init初始化为git仓库了
 	
 	git push <远程主机名> <本地分支名>:<远程分支名>	远程分支和本地分支保持一致，例如本地删除某个文件，提交后远程分支也会删除该文件
 	git push origin master		将本地masert分支推到远程master分支，push前最好先pull，以免产生冲突，例如远程仓库有新文件而本地仓库没有
 	git push -u origin master -f 	不但会把本地的master分支内容推送的远程新的master分支，还会把本地的master分支和远程的master分支关联起来
-
-
-​	
-​	git pull origin master 		将远程最新代码更新到本地，本地之前新增的不会被删除
-​	
-	git remote add origin git@github.com:Luosico/gitTest.git	本地添加一个远程仓库，origin为自定义远程仓库名字，可以任意取
 	
+	git pull origin master 		将远程最新代码更新到本地，本地之前新增的不会被删除
+	git remote add origin git@github.com:Luosico/gitTest.git	本地添加一个远程仓库，origin为自定义远程仓库名字，可以任意取
+
 	git remote -v				查看当前项目有哪些远程仓库
 	
 	git diff					比较工作目录和暂存区之间的差异，也就是修改后还没有暂存以来变化的内容
