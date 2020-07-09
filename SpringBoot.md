@@ -67,7 +67,7 @@
 
 ### 控制器方法的数据绑定 (`DataBinder`)
 
-    **Spring MVC通过反射机制对目标处理方法的签名进行分析，将请求消息绑定到处理方法的入参中**
+**Spring MVC通过反射机制对目标处理方法的签名进行分析，将请求消息绑定到处理方法的入参中**
 
   1. Spring MVC将`ServletRequest`对象及处理方法的入参对象实例传递给`DataBinder`
   2. `DataBinder`调用装配在Spring Web上下文中的`ConversionService`组件进行数据类型转换、数据格式化等工作，将`ServletRequest`中的消息填充到入参对象中
@@ -78,38 +78,38 @@
 
  ### 控制器方法参数
 
-  ​		**提交的表单数据是通过name获取而不是id**
+**提交的表单数据是通过 name 获取而不是 id**
 
-  - @PathVariable    路径变量，绑定URL路径的变量
+  - **@PathVariable**    路径变量，绑定URL路径的变量
 
-  - @RequestParam    绑定入参，当不存在是会抛出异常，若设置`required=false`,不会抛出异常
+  - **@RequestParam**    绑定入参，当不存在是会抛出异常，若设置`required=false`,不会抛出异常
 
-  - @RequestBody    获取请求体里的JSON数据，即`POST`提交的，`ContentType=application/json`
+  - **@RequestBody**    获取请求体里的JSON数据，即`POST`提交的，`ContentType=application/json`
 
-  - @RequestPart     获取复杂数据类型数据，一般为byte[]数组，spring提供了MultipartFile接口，可通过Part或MultipartFile获取
+  - **@RequestPart**     获取复杂数据类型数据，一般为byte[]数组，spring提供了MultipartFile接口，可通过Part或MultipartFile获取
 
-  - @ModelAttribute    该对象会被放到数据模型中，用于从Model、Form或URL请求参数中获取属性值
+  - **@ModelAttribute**    该对象会被放到数据模型中，用于从Model、Form或URL请求参数中获取属性值
 
-  - @SessionAttributes     将模型中的某个属性暂存到HttpSession中，以便多个请求之间可以共享这个属性
+  - **@SessionAttributes**     将模型中的某个属性暂存到HttpSession中，以便多个请求之间可以共享这个属性
 
-  - @CookieValue     获取请求携带的cookie值，绑定到方法的入参中
+  - **@CookieValue**     获取请求携带的cookie值，绑定到方法的入参中
 
-  - @RequestHeader   可以将报文头属性值绑定到方法的入参中
+  - **@RequestHeader**   可以将报文头属性值绑定到方法的入参中
 
-  - Map/Model/ModelMap    当处理器方法返回时，其中的数据会自动添加到模型中
+  - **Map/Model/ModelMap**    当处理器方法返回时，其中的数据会自动添加到模型中
 
-  - 直接使用的参数，如int、String   获取路径中？后的参数
+  - **直接使用的参数**，如int、String   获取路径中？后的参数
 
-  - 直接使用的参数，获取Bean对象，如：User，里面的名称必须一致，常见于表单提交的数据   
+  - **直接使用的参数**，获取Bean对象，如：User，里面的名称必须一致，常见于表单提交的数据   
 
-  - Servlet API     Spring MVC会自动将Web层对应的Servlet对象传递给处理方法的入参
+  - **Servlet API**     Spring MVC会自动将Web层对应的Servlet对象传递给处理方法的入参
 
     - HttpServletRequest 
     - HttpServletResponse
     - HttpEntity     整个HTTP报文，也可以作为返回值
     - HttpSession
 
-  - I/O对象作为入参    Spring MVC自动获取ServletRequest或ServletResponse的流
+  - **I/O对象**作为入参    Spring MVC自动获取ServletRequest或ServletResponse的流
 
     - InputStream/OutputStream
     - Reader/Writer
