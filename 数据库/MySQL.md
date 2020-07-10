@@ -353,6 +353,26 @@ create procedure test11()
 
 
 
+### 函数
+
+#### 1、函数与存储过程的区别
+
+​	存储过程和函数是事先经过编译并存储在数据库中的**一段SQL语句的集合**，减少数据在数据库和应用服务之间的传输，对于提高数据处理的效率是有好处的
+
+- **函数必须有返回值**，而**存储过程没有**，存储过程的参数可以使用**IN**、**OUT**、**INOUT**类型，而函数的参数只能是**IN**类型的。如果有函数从其他类型的数据库迁移到MySQL，可能需要将函数改造成存储过程。、
+
+```sql
+create function getusername(userid int) returns varchar(32)
+    reads sql data  -- 从数据库中读取数据，但不修改数据
+    begin
+        declare username varchar(32) default '';
+        select name into username from users where id=userid;
+        return username;
+    end;
+```
+
+
+
 ### 自增字段 auto_increment
 
 ​	**使用 auto_increment的列必须使用了索引，新插入的值每次都会从最大值开始增加，除非显示指定**
@@ -512,5 +532,20 @@ loop_name:loop -- 循环开始
         set sum=sum+i;
         set i=i+1;
 end loop;  -- 循环结束
+```
+
+
+
+### 触发器
+
+ 当对表进行 insert、update、delete 时触发操作
+
+```sql
+create trigger trigger_name after insert on users
+    for each row 
+    begin 
+        insert into oplog(userid,username,action,optime)
+        values(NEW.id,NEW.name,'insert',now());
+    end;
 ```
 
