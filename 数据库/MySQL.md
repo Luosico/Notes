@@ -327,7 +327,28 @@ select @idd;
 ```sql
 -- 使用游标，把users表中 id为偶数的记录逐一更新用户名
 
-
+create procedure test11()
+    begin
+        declare stopflag int default 0;
+        declare username VARCHAR(32);
+        -- 创建一个游标变量，declare 变量名 cursor ...
+        declare username_cur cursor for select name from users where id%2=0;
+        -- 游标是保存查询结果的临时区域
+        -- 游标变量username_cur保存了查询的临时结果，实际上就是结果集
+        -- 当游标变量中保存的结果都查询一遍(遍历),到达结尾，将变量stopflag设置为1，用于循环中判断是否结束
+        declare continue handler for not found set stopflag=1;
+ 
+        open username_cur; -- 打开游标
+        fetch username_cur into username; -- 游标向前走一步，取出一条记录放到变量username中
+        while(stopflag=0) do -- 如果游标还没有结尾，就继续
+            begin 
+                -- 在用户名前门拼接 '_cur' 字符串
+                update users set name=CONCAT(username,'_cur') where name=username;
+                fetch username_cur into username;
+            end;
+        end while; -- 结束循环
+        close username_cur; -- 关闭游标
+    end;
 ```
 
 
