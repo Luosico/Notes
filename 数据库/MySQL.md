@@ -320,7 +320,15 @@ select @idd;
 
 ![Um8y4g.png](https://s1.ax1x.com/2020/07/09/Um8y4g.png)
 
+#### 游标
 
+​	**游标是保存查询结果的临时区域**
+
+```sql
+-- 使用游标，把users表中 id为偶数的记录逐一更新用户名
+
+
+```
 
 
 
@@ -388,4 +396,100 @@ MySQL5.1.22版本引入了一个新策略，新增参数innodb_autoinc_lock_mode
 对于**count(***)和**count(1)**：官方文档指出对其优化是一样的，所有两者没什么区别
 
 优化方式是：优先选择最小的非聚簇索引来扫表，前提是查询语句不含where和group by
+
+
+
+### 控制语句
+
+#### 1、条件语句
+
+##### if-else-then
+
+```sql
+-- 基本结构
+if() then
+	...
+else
+	...
+end if;
+
+-- 嵌套结构
+if() then
+	...
+else if() then
+		...
+	else
+		...
+end if;
+```
+
+##### case
+
+- 当colume 与condition 条件相等时结果为result
+
+```sql
+case colume 
+    when condition then result
+    when condition then result
+    when condition then result
+else result
+end
+```
+
+- 当满足某一条件时，执行某一result
+
+```sql
+case
+    when condition then result
+    when condition then result
+    when condition then result
+else result
+end
+```
+
+- 当满足某一条件时，执行某一result,把该结果赋值到new_column_name 字段中
+
+```sql
+case  
+    when condition then result
+    when condition then result
+    when condition then result
+else result
+end new_column_name
+```
+
+
+
+#### 2、循环语句
+
+##### while
+
+```sql
+-- 不符合循环条件跳出循环
+while(表达式) do 
+   ......  
+end while;
+```
+
+##### repeat
+
+```sql
+-- 符合循环条件跳出循环
+repeat
+   ...
+until 循环条件  
+end repeat;
+```
+
+##### loop
+
+```sql
+loop_name:loop -- 循环开始
+	if i>a then 
+		leave loop_name;  -- 判断条件成立则结束循环  好比java中的 break
+    end if;
+        set sum=sum+i;
+        set i=i+1;
+end loop;  -- 循环结束
+```
 
