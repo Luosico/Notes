@@ -1,6 +1,6 @@
 # Oracle
 
-### 1、不同于MySQL的语句
+### 一、不同于MySQL的语句
 
 - ####  拼接列和字符串
 
@@ -24,7 +24,7 @@
 
 
 
-### 2、创建数据库
+### 二、创建数据库
 
 ​	**Oracle其实没有数据库database这一概念，实际上是表空间，是通过实例给每个用户分配不同的表空间，这样的表空间就是每个用户的数据库。所以直接创建表空间和对应的用户就行了**
 
@@ -83,7 +83,7 @@ drop user lkf cascade;
 
 
 
-### 3、数据类型
+### 三、数据类型
 
 #### number
 ​	 `number[precision [, scale ]]  precision为精度，scale为小数位数（尺度）`
@@ -178,3 +178,101 @@ column_name TIMESTAMP[(fractional_seconds_precision)]
 
 #### timestamp with time zone
 
+
+
+### 四、自增序列，类似MySQL的自增主键
+
+​	**Oracle里的序列（SEQUENCE），可间接实现自增主键的作用**
+
+#### 1、序列
+
+​	又叫序列生成器，用于提供一系列的数字，开发人员使用序列生成唯一键。每次访问序列，序列按照一定的规律增加或者减少。
+
+​	序列的定义存储在SYSTEM表空间中，序列不像表，它不会占用磁盘空间。
+
+​	序列独立于事务，每次事务的提交和回滚都不会影响序列。
+
+```sql
+create sequence sequenceName      //序列名字
+increment by 1                    //每次自增1， 也可写非0的任何整数，表示自增，或自减
+start with 1                      //以该值开始自增或自减
+maxvalue 1.0E20                   //最大值；设置NOMAXVALUE表示无最大值
+minvalue 1                        //最小值；设置NOMINVALUE表示无最大值
+cycle or nocycle                  //设置到最大值后是否循环；
+cache 20                          //指定可以缓存 20 个值在内存里；如果设置不缓存序列，则写NOCACHE
+order or noorder                  //设置是否按照请求的顺序产生序列
+```
+
+
+
+#### 2、步骤
+
+- 创建表
+
+    ```sql
+    create table user(
+    	id int primary key,
+        name varchar(20)
+    )
+    ```
+
+- 创建自增序列
+
+    ```sql
+    create sequence user_sequence
+    increment by 1			-- 步长为 1
+    start with 1			-- 从 1 开始增加
+    nomaxvalue              -- 不设置最大值
+    nocycle					-- 一直累加，不循环
+    nocache					-- 不设置缓存
+    ```
+
+- 创建触发器
+
+    ```sql
+    create trigger user_trigger before insert into user
+    	for each row
+    	begin
+    		select user_sequence.nextval into :new.id from dual;
+    	end;
+    ```
+
+
+
+### 五、索引
+
+```sql
+create unique | bitmap index <schema>.<index_name> on <schema>.<table_name>
+(
+	<column_name> | <expression> asc | desc, -- 索引列
+    <columm_name> | <expression> asc | decs,
+    ...
+)
+tableSpace <tableSpace_name>
+storage <storage_settings>
+logging | noLogging
+compute statistics
+nocompress | compress<nn>
+noSort | reverse
+partition | global partition<partition_setting>
+```
+
+**相关说明**
+
+1、unique | bitmap：指定unique为唯一值索引，bitmap为位图索引，省略为B-Tree索引
+
+2、<column_name> | <expression>  ASC | DESC：可以对多列进行联合索引，当为expression时即“基于函数的索引”
+
+3、tableSpace：指定存放索引的表空间(索引和原表不在一个表空间时效率更高)
+
+4、storage：可进一步设置表空间的存储参数
+
+5、logging |noLogging：是否对索引产生重做日志(对大表尽量使用noLogging来减少占用空间并提高效率)
+
+6、compute statitstics：创建新索引时收集统计信息
+
+7、nocompress | compress<nn>：是否使用“键压缩”(使用键压缩可以删除一个键列中出现的重复值)
+
+8、noSort |reverse：nosort表示与表中相同的顺序创建索引，reverse表示相反顺序存储索引值
+
+9、partition| nopartition：可以在分区表和未分区表上对创建的索引进行分区
