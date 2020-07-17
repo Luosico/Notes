@@ -2,24 +2,24 @@
 
 ### 一、不同于MySQL的语句
 
-- ####  拼接列和字符串
+####  拼接列和字符串
 
-  - **Oracle**
+- **Oracle**
 
-    **|| 连接运算符**，连接列和字符串，列和列，字符串和字符串
+  **|| 连接运算符**，连接列和字符串，列和列，字符串和字符串
 
-    ```
-    select name || age from user;
-    select name || ' age is: ' || age from user;
-    ```
+  ```
+  select name || age from user;
+  select name || ' age is: ' || age from user;
+  ```
 
-  - **MySQL**
+- **MySQL**
 
-    **contact() 函数**
+  **contact() 函数**
 
-    ```
-    select contact(name,' age is: ',age) from user;
-    ```
+  ```
+  select contact(name,' age is: ',age) from user;
+  ```
 
 
 
@@ -30,7 +30,9 @@
 
 ​	oracle在创建数据库的时候要对应一个用户，数据库和用户一般一一对应，mysql和sql server 直接通过create databse “数据库名” 就可以直接创建数据库了，而oracle创建一个数据库需要以下三个步骤：
 
-**1、创建两个数据库文件：`test.dbf`和`test_temp.dbf`** **(文件名字自定义)**
+#### 1、创建两个数据库文件
+
+**`test.dbf`和`test_temp.dbf`** **(文件名字自定义)**
 
 ```sql
 create tableSpace test logging dataFile 'E:\Oracle\oradata\LUOSICO\test.dbf' size 100M autoExtend on next 32M maxSize 500M extent management local;
@@ -38,7 +40,9 @@ create tableSpace test logging dataFile 'E:\Oracle\oradata\LUOSICO\test.dbf' siz
 create temporary tableSpace test_temp tempFile 'E:\Oracle\oradata\LUOSICO\test_temp.dbf' size 100M autoExtend on next 32M maxSize 500M extent management local;
 ```
 
-**2、创建用户，并与上面创建的文件形成映射关系（这里用户名为`c##lkf`，密码为`123456`）**
+#### 2、创建用户
+
+**并与上面创建的文件形成映射关系（这里用户名为`c##lkf`，密码为`123456`）**
 
 ```sql
 create user c##lkf identified by 123456 default tableSpace test temporary tableSpace test_temp;
@@ -61,7 +65,7 @@ alter session set container=cdb$root;
 
 ​		Oracle 12c 引入了CDB(container database)与PDB(plugable database，可插拔数据库 )的概念，**一个CDB可以承载多个PDB**，在这之前，实例与数据库是一对一或多对一关系（RAC）：即一个实例只能与一个数据库相关联，数据库可以被多个实例所加载。而实例与数据库不可能是一对多的关系。当进入ORACLE 12C后，实例与数据库可以是一对多的关系
 
-**3、给用户添加权限**
+#### 3、给用户添加权限
 
 ```
 grant connect,resource,dba to c##lkf ;
@@ -69,16 +73,52 @@ grant create session to c##lkf ;
 commit;
 ```
 
-#### 删除数据库
+#### 4、删除数据库
 
 ```sql
 drop tableSpace test including contents and dataFiles;
 ```
 
-#### 删除用户
+#### 5、删除用户
 
 ```SQL
 drop user lkf cascade;
+```
+
+#### 6、角色
+
+角色是命名的权限的集合，用于分配给用户，可以简化DBA向用户分配权限的工作
+
+**一个用户可以拥有多个角色，一个角色可以分配给多个用户**
+
+```sql
+-- 建立角色
+create role role_name;
+
+-- 给角色授予权限
+grant create table,create view to role_name;
+
+-- 授予角色给用户
+grant role_name to user_name;
+```
+
+#### 7、授权
+
+```sql
+grant object_privileges[(columns...)]
+on object
+to {user|role option}
+[with grant option]; -- 权限可继承
+```
+
+#### 8、回收权限
+
+```sql
+-- 使用 with grant option授予的用户权限，也一起被撤销
+revoke {privileges [,privileges...] | all}
+on object
+from {user[,user...]|role|public}
+[cascade constraints]; --
 ```
 
 
@@ -160,6 +200,8 @@ nvarchar2(max_length)
 
 ​		Oracle数据库有其自己的专用格式来存储日期数据。它使用 **7** 个字节的固定长度的字段，每个字段对应于世纪，年，月，日，时，分和秒来存储日期数据。
 
+​		当插入为 YYYY/MM/DD时，自动添加 0时0分0秒，查找时不会显示这个
+
 
 
 #### timestamp
@@ -237,12 +279,31 @@ order or noorder                  //设置是否按照请求的顺序产生序�
     	end;
     ```
 
+- 插入数据
+
+    ```sql
+    insert into table_name(id,name)
+    values(user_sequence.nextval,'sally')
+    ```
+
+    
+
+### 3、属性
+
+##### nextval
+
+​	返回下一个可用的序列值，即使针对不同的用户，每次也是返回唯一的值
+
+##### currval
+
+​	返回当前序列值，在其返回序列值之前，必须先分配nextval
+
 
 
 ### 五、索引
 
 ```sql
-create unique | bitmap index <schema>.<index_name> on <schema>.<table_name>
+create unique|bitmap index <schema.> index_name on <schema.> table_name
 (
 	<column_name> | <expression> asc | desc, -- 索引列
     <columm_name> | <expression> asc | decs,
@@ -257,7 +318,7 @@ noSort | reverse
 partition | global partition<partition_setting>
 ```
 
-**相关说明**
+#### 相关说明
 
 1、unique | bitmap：指定unique为唯一值索引，bitmap为位图索引，省略为B-Tree索引
 
@@ -276,3 +337,71 @@ partition | global partition<partition_setting>
 8、noSort |reverse：nosort表示与表中相同的顺序创建索引，reverse表示相反顺序存储索引值
 
 9、partition| nopartition：可以在分区表和未分区表上对创建的索引进行分区
+
+#### 删除索引
+
+```sql
+drop index index_name;
+```
+
+
+
+### 六、约束
+
+#### 1、建表时
+
+```sql
+-- 主键
+constriant constraint_name primary key(column...)
+
+-- 唯一性
+constriant constraint_name unique(column...)
+
+-- 外键
+constriant constraint_name foreign key(column) references table_name(column)
+		on delete cascade  -- 父表行被删除，字表行被级联删除
+		on delete set null -- 父表行被删除，字表行设置为空值null
+		
+-- 检查
+constraint constraint_name check(条件)
+```
+
+#### 2、建表后
+
+```sql
+-- 禁用约束
+alter table table_name disable constraint constraint_name
+-- 启用约束
+alter table table_name enable constraint constraint_name
+-- 删除约束
+alter table table_name drop constraint constraint_name
+
+-- 主键
+alter table table_name add constraint constraint_name primary key(column...)
+
+-- 唯一性
+alter table table_name add constraint constraint_name unique(column...)
+
+-- 外键
+alter table table_name add constraint constraint_name foreign key(column) references table_name(column)
+		on delete cascade  -- 父表行被删除，字表行被级联删除
+		on delete set null -- 父表行被删除，字表行设置为空值null
+
+-- 检查
+alter table table_name add constraint constraint_name check(条件)
+```
+
+
+
+### 七、同义词 Synonym
+
+​	**相当于另一个对象的别名，可以简化对象的访问**
+
+​	**public **使同义词可以由所有用户访问
+
+​	私有同义词的名字不可以与同用户的其他对象同名
+
+```sql
+create  [public] synonym for object;
+```
+
