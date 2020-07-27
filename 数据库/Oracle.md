@@ -405,3 +405,34 @@ alter table table_name add constraint constraint_name check(条件)
 create  [public] synonym for object;
 ```
 
+
+
+### 八、 dual
+
+​	**指的是Oracle中的dual表，是一个单行单列的虚拟表，是与数据字典一起自动创建的一个表，这个表只有1列DUMMY，数据类型为VERCHAR2(1)，dual表中只有一个数据’X’, Oracle有内部逻辑保证dual表中永远只有一条数据**
+
+​	主要用来选择系统变量或求一个表达式的值
+
+```sql
+select sysdate from dual
+```
+
+
+
+### 九、分组函数
+
+#### 1、rollup
+
+```sql
+... group by rollup(a,b,c)
+```
+
+相当于分组`(a,b,c) (a,b) (a) ()`，并将它们的结果和起来`union all` 
+
+#### 2、cube
+
+```sql
+... group by cube(a,b,c)
+```
+
+相当于分组`(a,b,c) (a,b) (a,c) (b,c) (a) (b) (c) ()`
