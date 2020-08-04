@@ -340,7 +340,7 @@ create procedure test11()
  
         open username_cur; -- 打开游标
         fetch username_cur into username; -- 游标向前走一步，取出一条记录放到变量username中
-        while(stopflag=0) do -- 如果游标还没有结尾，就继续
+        whi	`le(stopflag=0) do -- 如果游标还没有结尾，就继续
             begin 
                 -- 在用户名前门拼接 '_cur' 字符串
                 update users set name=CONCAT(username,'_cur') where name=username;

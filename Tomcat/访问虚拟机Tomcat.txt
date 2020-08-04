@@ -1,0 +1,4 @@
+必须关闭防火墙
+
+# 关闭防火墙
+systemctl stop firewalld.service
