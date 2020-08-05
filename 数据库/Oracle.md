@@ -546,6 +546,49 @@ CLOSE cur_cdd;
 
 ```
 
+**从游标获取数据**
+
+**<font color='green'>取一次必须调用一次 fetch</font>**
+
+```sql
+create or replace procedure myprocedure is
+      CURSOR CUR_TEST IS --声明显式游标
+             SELECT ECODE,ENAME FROM EMP;
+      CUR CUR_TEST%ROWTYPE; --定义游标变量，该变量的类型为基于游标C_EMP的记录
+
+    BEGIN 
+      --For 循环
+      FOR CUR IN CUR_TEST LOOP
+          --循环体
+        DBMS_OUTPUT.PUT_LINE('员工编号：'||CUR.ECODE ||'员工姓名：'|| CUR.ENAME);
+      END LOOP;
+
+      --Fetch 循环
+      OPEN CUR_TEST;--必须要明确的打开和关闭游标
+      LOOP 
+        FETCH CUR_TEST INTO CUR;
+        EXIT WHEN CUR_TEST%NOTFOUND;
+        --循环体
+        DBMS_OUTPUT.PUT_LINE('员工编号：'||CUR.ECODE ||'员工姓名：'|| CUR.ENAME);
+      END LOOP; 
+      CLOSE C_EMP;
+
+      --While 循环
+      OPEN CUR_TEST;--必须要明确的打开和关闭游标
+        FETCH CUR_TEST INTO CUR;
+        WHILE CUR_TEST%FOUND LOOP  
+          --循环体
+          DBMS_OUTPUT.PUT_LINE('员工编号：'||CUR.ECODE ||'员工姓名：'|| CUR.ENAME);
+
+          FETCH CUR_TEST INTO CUR;
+        END LOOP;
+      CLOSE C_EMP;
+
+END myprocedure;
+```
+
+
+
 ##### 1、游标属性
 
 - %FOUND
