@@ -47,6 +47,7 @@ create temporary tableSpace test_temp tempFile 'E:\Oracle\oradata\LUOSICO\test_t
 ```sql
 create user c##lkf identified by 123456 default tableSpace test temporary tableSpace test_temp;
 # 用户名必须以c##开头
+# 有时不需要c##开头
 ```
 
 ​		容器数据库创建新用户并分配表空间时必须在没有PDB的情况下进行或PDB与CDB有相同的表空间的时候进行，否则会报错。如果是在PDB与CDB 有相同表空间的情况下给CDB用户分配表空间，则分配CDB的表空间给用户PDB的表空间并不受影响。而且，CDB用户必须以‘C##’为开头，否则创建不了
