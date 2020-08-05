@@ -437,3 +437,167 @@ select sysdate from dual
 ```
 
 相当于分组`(a,b,c) (a,b) (a,c) (b,c) (a) (b) (c) ()`
+
+
+
+### 十、存储过程
+
+#### 1、基本结构
+
+包含三部分：**过程声明**，**执行过程部分**，**存储过程异常**（可写可不写，要增强脚本的容错性和调试的方便性那就写上异常处理）
+
+#### 2、基本实例
+
+```sql
+CREATE OR REPLACE PROCEDURE name(
+	id in number(10)	
+) AS/IS
+	变量2 DATE;
+	变量3 NUMBER;
+BEGIN
+	--要处理的业务逻辑
+	EXCEPTION    --存储过程异常
+END
+```
+
+#### 3、is/as
+
+在begin和end之间，存储过程内部使用的各类变量或者常量，需要在 **is/as** 和 **begin** 之间进行定义
+
+#### 4、循环
+
+```sql
+FOR a in 10 .. 20 LOOP
+  dbms_output.put_line('value of a: ' || a);
+END LOOP;
+```
+
+
+
+```sql
+while i<10 loop
+	dbms_output.put_line('hello');
+end loop;
+```
+
+
+
+```
+LOOP
+      x := x + 1;
+    
+      EXIT WHEN x > 9;
+      DBMS_OUTPUT.PUT_LINE('x=' || x);
+ END LOOP;
+```
+
+
+
+#### 5、dbms_output
+
+- enable 
+
+    ​	在serveroutput on的情况下，用来使dbms_output生效(默认即打开)
+
+    ​	**启用serveroutput : set serveroutput on**
+
+    ​	**关闭serveroutput : set serveroutput off**
+
+- disable
+
+    ​	在serveroutput on的情况下，用来使dbms_output失效
+
+- put（）
+
+    ​	将内容写到内存，等到put_line/new_line时一起输出
+
+- put_line(value)
+
+    ​	输出字符（如果缓存中有内容，同时输出）
+
+- new_line
+
+    ​	换行（如果缓存中有内容，同时输出）
+
+- get_line(value, status)
+
+    ​	获取缓冲区的单行信息（返回的内容被存在value中，返回的状态会被存在status）
+
+- get_lines(array, status)
+
+    ​	以数组形式来获取缓冲区的多行信息
+
+#### 6、游标
+
+```sql
+-- 获取游标
+CURSOR cur_cdd IS SELECT s_id, s_name FROM student;
+
+-- 打开游标游标分配内存，使得它准备取的SQL语句转换成它返回的行
+OPEN cur_cdd;
+
+-- 抓取游标中的数据，可用LIMIT关键字来限制条数，如果没有默认每次抓取一条
+FETCH cur_cdd INTO id, name;
+
+
+
+-- 关闭游标来释放分配的内存
+CLOSE cur_cdd;
+
+```
+
+##### 1、游标属性
+
+- %FOUND
+
+    如果DML语句执行后影响有数据被更新或DQL查到了结果，返回true。否则，返回false。
+
+- %NOTFOUND
+
+    如果DML语句执行后影响有数据被更新或DQL查到了结果，返回false。否则，返回true。
+
+- %ISOPEN
+
+    游标打开时返回true，反之，返回false。
+
+- %ROWCOUNT
+
+    返回DML执行后影响的行数。
+
+##### 2、BUIK COLLECT
+
+​	Oracle8i中首次引入了Bulk Collect特性，Bulk Collect会能进行批量检索，会将检索结果结果一次性绑定到一个集合变量中，而不是通过游标cursor一条一条的检索处理。可以在SELECT INTO、FETCH INTO、RETURNING INTO语句中使用BULK COLLECT
+
+- select into 
+
+    查出来一个结果集合赋值给一个集合变量
+
+    ```sql
+    select f1,f2 bulk collect into m from table_name;
+    ```
+
+- fetch into 
+
+    从一个集合中抓取一部分数据赋值给一个集合变量
+
+    ```sql
+    fetch cursor_name bulk collect into m [limit rows]
+    --  [LIMIT rows]：可有可无，限制每次抓取的数据量。不写的话，默认每次一条数据
+    ```
+
+
+
+### 十一、限制查询条数
+
+ **rownum**，都是从1 开始，只要是从1 开始就能返回结果
+
+#### 1、等值
+
+- rownum = 1，返回第一条数据
+- rownum = 2 （大于 1 的数），不符合从1开始，不会返回结果
+
+#### 2、不等式
+
+- rownum < 3，返回两条数据，第一条和第二条数据
+- rownum > 1，不符合从 1 开始，不会返回结果
+- rownum > 0，返回所有数据
