@@ -6,7 +6,7 @@
 	
 	- 流是基于字节的，按顺序一个字节接一个字节地传动数据，处于性能考虑，也可以传送字节数组，仍符合
 	- 通道是基于块的，传送的是缓冲区中的数据块，这些字节必须已经存储在缓冲区中，而且一次读/写一个缓冲区的数据
-- **通道类**: SocketChannel、ServerSocketChannel、DatagramChannel、FileChannel 等
+- **通道类**: SocketChannel、ServerSocketChannel、DatagramChannel、FileChannel(不能非阻塞，不能使用selector) 等
 - **SocketChannel**
 	
 	- **作用**：可以读写TCP Socket。数据必须编码到 **ByteBuffer** 对象中来完成读/写。每个SockerChannel都与一个对等端Socket相关联。		
@@ -122,6 +122,8 @@
 
 - **多路复用**
 
+- **允许单个线程处理多个Channel，Channel必须处于非阻塞模式下**
+
 - **作用**：能够选择读写时**不阻塞**的Socket,通过将不同的通道注册到一个Selector对象，每个通道都将分配有一个SelectionKey
 	
 		**注意是非阻塞通道**
@@ -131,15 +133,16 @@
 	Selector selector = Selector.open();
 	
 	//在通道绑定Selector
-	channel.register(selector,SelectionKey.OP_ACCEPT | 	SelectionKey.OP_CONNECT);
+	//用 | 绑定多个事件
+	SelectionKey selectionKey = channel.register(selector,SelectionKey.OP_ACCEPT | 	SelectionKey.OP_CONNECT);
 	//第三个参数是附件，通常用于存储连接的状态
-	channel.register(selector,SelectionKey.OP_WRITE,Object attach);
+	SelectionKey selectionKey = channel.register(selector,SelectionKey.OP_WRITE,Object attach);
 	
 	//非阻塞选择，如果当前没有准备好要处理的连接，立即返回
 	selector.selectNow(); //return int;
 	
 	//阻塞选择，一直等待直到至少有一个注册的通道准备好可以进行处理
-	selector.select(); //return int;
+	selector.select(); //return int 自上次调用select()方法后有多少通道变成就绪状态;
 	//返回0前只等待不超过timeout毫秒
 	selector.select(long timeout);
 	
@@ -153,6 +156,8 @@
 - **SelectionKey**
 	
 	- SelectionKey对象相当于通道的指针，还可以保存一个对象附件，一般会存储通道的连接状态
+		
+	- 一个SelectionKey对应一个Channel
 		
 			```java
 		//测试SelectionKey对象能进行哪些操作
@@ -213,7 +218,7 @@
 			byte[] array = buffer.array();
 			```
 			
-			
+		
 	- allocatDirect()
 		
 		- 直接分配，不为缓冲区创建后备数组
