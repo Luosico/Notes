@@ -120,52 +120,66 @@
 
 ## 4、选择器 Selector
 
-- 作用：能够选择读写时不阻塞的Socket,通过将不同的通道注册到一个Selector对象，每个通道都将分配有一个SelectionKey
-		
-		//获取Selector对象
-		Selector selector = Selector.open();
-		
+- **多路复用**
+
+- **作用**：能够选择读写时**不阻塞**的Socket,通过将不同的通道注册到一个Selector对象，每个通道都将分配有一个SelectionKey
 	
-		//在通道绑定Selector
-		channel.register(selector,SelectionKey.OP_ACCEPT | 	SelectionKey.OP_CONNECT);
-		//第三个参数是附件，通常用于存储连接的状态
-		channel.register(selector,SelectionKey.OP_WRITE,Object attach);
-		
-		//非阻塞选择，如果当前没有准备好要处理的连接，立即返回
-		selector.selectNow(); //return int;
-		
-		//阻塞选择，一直等待直到至少有一个注册的通道准备好可以进行处理
-		selector.select(); //return int;
-		//返回0前只等待不超过timeout毫秒
-		selector.select(long timeout);
-		
-		//当直到有通道已经准备好，获取就绪通道
-		Set<SelectionKey> set = selector.selectedKeys();
-		
-		//关闭选择器
-		selector.close();
-- SelectionKey
+		**注意是非阻塞通道**
+	
+	```java
+	//获取Selector对象
+	Selector selector = Selector.open();
+	
+	//在通道绑定Selector
+	channel.register(selector,SelectionKey.OP_ACCEPT | 	SelectionKey.OP_CONNECT);
+	//第三个参数是附件，通常用于存储连接的状态
+	channel.register(selector,SelectionKey.OP_WRITE,Object attach);
+	
+	//非阻塞选择，如果当前没有准备好要处理的连接，立即返回
+	selector.selectNow(); //return int;
+	
+	//阻塞选择，一直等待直到至少有一个注册的通道准备好可以进行处理
+	selector.select(); //return int;
+	//返回0前只等待不超过timeout毫秒
+	selector.select(long timeout);
+	
+	//当直到有通道已经准备好，获取就绪通道
+	Set<SelectionKey> set = selector.selectedKeys();
+	
+	//关闭选择器
+	selector.close();
+	```
+	
+- **SelectionKey**
+	
 	- SelectionKey对象相当于通道的指针，还可以保存一个对象附件，一般会存储通道的连接状态
 		
-			//测试SelectionKey对象能进行哪些操作
-			public final boolean isAcceptable()
-			public final boolean isConnectable()
-			public final boolean isReadable()
-			public final boolean isWritable()
-
-			//获取通道
-			SelectableChannel channel = selectionKey.channel();
-			//设置附件
-			selectionKey.attach(buffer);
-			//获取附件 attachment
-			Object attacher = selectionKey.attachment();
-			
-			//撤销通道的注册
-			selectionKey.cancle();
+			```java
+		//测试SelectionKey对象能进行哪些操作
+		public final boolean isAcceptable()
+		public final boolean isConnectable()
+	public final boolean isReadable()
+	public final boolean isWritable()
+		```
+		
+		
+		
+		```java
+		//获取通道
+		SelectableChannel channel = selectionKey.channel();
+		//设置附件
+		selectionKey.attach(buffer);
+		//获取附件 attachment
+		Object attacher = selectionKey.attachment();
+		
+		//撤销通道的注册
+		selectionKey.cancle();
+		```
 
 ## 5、缓冲区 Buffer
 
 - 除boolean外，java所有基本数据类型都有特定的Buffer子类，如：ByteBuffer、CharBuffer等
+
 - 每个缓冲区记录信息的4个关键部分：
 	- 位置（position）
 		- 缓冲区中将读取或写入的下一个位置，从0开始计，最大值等于容量
@@ -184,56 +198,81 @@
 	- flip()：将限度设为当前位置，位置设为0
 	- remaining()：返回当前位置与限度之间的元素数
 	- hasRemaining()：若剩余元素大于0，返回true，否则返回false
+	
 - 创建缓冲区
 	- 空的缓冲区由分配（allocate）方法创建，预填充数据的缓冲区由包装（wrap）方法创建
 	- allocate()
 		- 常用语输入
+		
 		- 返回一个指定容量的空缓冲区，位置为0
+		
 		- 它创建的缓冲区基于Java数组实现，可以通过array()和arrayOffset()来访问，修改会反映到缓冲区中，反之亦然，实际上暴露了缓冲区的私有数据，谨慎使用
 		
-				ByteBuffer buffer = ByteBuffer.allocate(100);
-				byte[] array = buffer.array();
+				```java
+			ByteBuffer buffer = ByteBuffer.allocate(100);
+			byte[] array = buffer.array();
+			```
+			
+			
 	- allocatDirect()
 		
 		- 直接分配，不为缓冲区创建后备数组
 	- wrap()
 		- 常用与输出		
 		
-				byte[] date = "Hello".getBytes();
-				ByteBuffer buffer = ByteBuffer.wrap(data);
+				```java
+			byte[] date = "Hello".getBytes();
+			ByteBuffer buffer = ByteBuffer.wrap(data);
+			```
+			
+			
+	
 - 填空和排空
-		
-		buffer.put()  //向缓冲区写入一个数据，并位置加1
-		buffer.get()  //从缓冲区读取一个数据，并位置减1
-
-		buffer.get(byte[] dst);
-		buffet.get(byte[] dst,int offset,int length);	//从缓冲区中向数组的offset位置写入length长度的数据
-		
-		buffer.put(byte[] array);
-		buffer.put(byte[] array,int offset,int length);	//从数组的offset位置读取length长度到缓冲区
+	
+		```java
+	buffer.put(byte)  //向缓冲区写入一个数据，并位置加1
+buffer.get(int)  //从缓冲区读取一个数据，并位置减1
+	
+	buffer.get(byte[] dst);
+	buffet.get(byte[] dst,int offset,int length);	//从缓冲区中向数组的offset位置写入length长度的数据
+	
+	buffer.put(byte[] array);
+	buffer.put(byte[] array,int offset,int length);	//从数组的offset位置读取length长度到缓冲区
+	```
+	
 - 改变字节顺序(默认为大端模式，big-endian)
-		
-		buffer.order(ByteOrder.LITTLE_ENDIAN)； //小端模式
-		buffer.order(IntOrder.LITTLE_ENDIAN)
+	
+		```java
+	buffer.order(ByteOrder.LITTLE_ENDIAN)； //小端模式
+	buffer.order(IntOrder.LITTLE_ENDIAN)
+	```
+	
 - 视图缓冲区
 	- 可以将当前缓冲区转换成其他类型的缓冲区
-			
-			IntBuffer intbuffer = byteBuffer.asIntBuffer();
-			FloatBuffer floatBuffer = byteBuffer.asFloatBuffer();
+		
+			```java
+		IntBuffer intbuffer = byteBuffer.asIntBuffer();
+		FloatBuffer floatBuffer = byteBuffer.asFloatBuffer();
+		```
+		
 	- 非阻塞模式不能保证缓冲区在排空后仍能以int、double、或char等类型的边界对齐。向非阻塞通道写入一个ine或double的半个字节是完全可能的
+	
 - 压缩缓冲区
 	- 压缩时将缓冲区中所有剩余的数据移到缓冲区的开头，位置设置为数据末尾
 	
 			buffer.compact()
+	
 - 复制缓冲区
 	- 返回值不是克隆，复制的缓冲区共享相同的数据，修改一个缓冲区中的数据会反映到其他缓冲区
 	- 尽管共享相同的数据，但每个缓冲区都有独立的标记、限度和位置
 		
 			ByteBuffer duplicateBuffer = buffer.duplicate();
+	
 - 分片缓冲区
 	- 是原缓冲区的一个子序列，分片的起始位置是原缓冲区的当前位置
 		
 			ByteBuffer sliceBuffer = buffer.slice();
+	
 - 缓冲区相等的条件，即`buffer1.equals(buffer2)==true`
 	- 是相同类型的缓冲区
 	- 缓冲区中剩余元素个数相同，即position-limit
