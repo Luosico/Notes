@@ -1,102 +1,122 @@
 # 									<font size=7>Java NIO</font>
 
 ## 1、 通道 Channel
-- 作用：通道将缓冲区的数据块移入或移出到各种I/O源，如文件、socket、数据报等。
-- 与流的区别：
+- **作用**：通道将缓冲区的数据块移入或移出到各种I/O源，如文件、socket、数据报等。
+- **与流的区别**：
+	
 	- 流是基于字节的，按顺序一个字节接一个字节地传动数据，处于性能考虑，也可以传送字节数组，仍符合
 	- 通道是基于块的，传送的是缓冲区中的数据块，这些字节必须已经存储在缓冲区中，而且一次读/写一个缓冲区的数据
-- 通道类: SocketChannel、ServerSocketChannel、DatagramChannel、FileChannel 等
-- SocketChannel
-	- 作用：可以读写TCP Socket。数据必须编码到ByteBuffer对象中来完成读/写。每个SockerChannel都与一个对等端Socket相关联。		
+- **通道类**: SocketChannel、ServerSocketChannel、DatagramChannel、FileChannel 等
+- **SocketChannel**
 	
-			//通过静态open方法创建SocketChannel对象
-			ServerChannel channel = SOcketChannel.open();
-			ServerChannel channel = SOcketChannel.open(SocketAddress socketAddress)
-			
-			//设置是否阻塞（默认阻塞）
-			channel.configureBlocking(false);//非阻塞
-			
-			//阻塞模式下，阻塞直到连接建立成功
-			//非阻塞模式下，会立即返回，甚至在连接建立之前就会返回
-			channel.connect();
+	- **作用**：可以读写TCP Socket。数据必须编码到 **ByteBuffer** 对象中来完成读/写。每个SockerChannel都与一个对等端Socket相关联。		
+	
+			```java
+		//通过静态open方法创建SocketChannel对象
+		ServerChannel channel = SocketChannel.open();
+		ServerChannel channel = SocketChannel.open(SocketAddress socketAddress)
 		
-			//非阻塞模式下，必须调用这个方法，若连接建立成功返回ture,否则false。阻塞模式立即返回true
-			channel.finishConnect();
+		//设置是否阻塞（默认阻塞）
+		channel.configureBlocking(false);//非阻塞
 		
-			//连接打开时返回true
-			channel.isConnected()
-			//连接仍在建立但尚未打开时返回true
-			channel.isConnectionPending();
-	- 读写数据：必须使用ByteBuffer缓冲区  
-			
-			//通道会用尽可能多的数据填充缓冲区，然后返回放入的字节数
-			//流结尾返回-1
-			//没数据时，阻塞会等待，非阻塞返回0
-			channel.read(ByteBuffer buffer);
-			//散布：从一个源填充多个缓冲区
-			channel.read(ByteBuffer[] buffers);
-			//从位于offset的缓冲区开始，填充length个缓冲区
-			channel.read(ByteBuffer[] buffers,int offset,int length);
-
-			//非阻塞时，不能保证会写入缓冲区的全部内容，不过根据缓冲区基于游标的特性可以保证将其排空
-			channel.write(ByteBuffer buffer);
-			//聚集：将多个缓冲区的数据写入到一个通道
-			channel.write(ByteBuffer[] buffers);
-			channel.write(ByteBuffer[] buffers,int offset,int length);
+		//阻塞模式下，阻塞直到连接建立成功或出现异常
+		//非阻塞模式下，会立即返回，甚至在连接建立之前就会返回，若立即建立成功，返回true，否则返回false
+		channel.connect();
 		
-			//关闭
-			channel.close();
-			//判断通道是否关闭
-			channel.isOpen();
-- ServerSocketChannel
+		//非阻塞模式下，必须调用这个方法，若连接建立成功返回ture,否则false
+		//阻塞模式立即返回true
+		channel.finishConnect();
+		
+		//连接打开时返回true
+		channel.isConnected()
+		//连接仍在建立但尚未打开时返回true
+		channel.isConnectionPending();
+		```
+	- **读写数据**：必须使用 **ByteBuffer** 缓冲区  
+		
+			```java
+		//通道会用尽可能多的数据填充缓冲区，然后返回放入的字节数
+		//流结尾返回-1
+		//没数据时，阻塞会等待，非阻塞返回0
+	channel.read(ByteBuffer buffer);
+		//散布：从一个源填充多个缓冲区
+		channel.read(ByteBuffer[] buffers);
+		//从位于offset的缓冲区开始，填充length个缓冲区
+	channel.read(ByteBuffer[] buffers,int offset,int length);
+		
+		//非阻塞时，不能保证会写入缓冲区的全部内容，不过根据缓冲区基于游标的特性可以保证将其排空
+		channel.write(ByteBuffer buffer);
+		//聚集：将多个缓冲区的数据写入到一个通道
+		channel.write(ByteBuffer[] buffers);
+		channel.write(ByteBuffer[] buffers,int offset,int length);
+		
+		//关闭
+		channel.close();
+		//判断通道是否关闭
+		channel.isOpen();
+		```
+- **ServerSocketChannel**
+	
 	- 作用：只能接受入站连接，无法读取、写入或连接ServerSocketChannel
 	
-			//获取ServerSocketChannel对象
-			ServerSockerChannel serverChannel = ServerSocketChannel.open();
-			//获得相应对等端(peer)的ServerSocket
-			ServerSocket serverSocket = serverChannle.socket();
-			//绑定端口，两种方式
-			serverChannel.bind(InetSocketAddress address);
-			serverSocket.bind(InetSocketAddress address);
-
+	   ```java
+	   	//获取ServerSocketChannel对象
+	   	ServerSockerChannel serverChannel = ServerSocketChannel.open();
+	   	//获得相应对等端(peer)的ServerSocket
+	   	ServerSocket serverSocket = serverChannle.socket();
+	   	//绑定端口，两种方式
+   	serverChannel.bind(InetSocketAddress address);
+	   	serverSocket.bind(InetSocketAddress address);
+	   ```
+	
 	- 接受连接
 	
-			//阻塞模式下，一直等待知道接受的连接建立成功
+			```java
+			//阻塞模式下，一直等待直到接受的连接建立成功
 			//非阻塞模式下,没有入站连接立即返回 null
 			SocketChannel socketChannel = serverChannel.accept();
+		```
 
-## 2、异步通道 AsybchronousChannel
 
-- 异步通道类：AsybchronousSocketChannel、AsybchronousServerSocketChannel等
-- 差别：异步通道会立即返回，甚至在I/O完成之前就会返回，所读写的数据会由Future或CompletionHandle进一步处理，connect()和accept()方法也会异步执行，并返回Future。这里不使用选择器
 
-			AsybchronousSocketChannel socketChannel = AsybchronousSocketChannel.open(InetSocketAddress address);
-			Future<Void> connected = socketChannel.connect();
-			ByteBuffer buffer = ByteBuffer.allocate(50);
+## 2、异步通道 AsynchronousChannel
 
-			//等待连接完成
-			connected.get();
-			
-			//从连接读取
-			Future<Integer> future = socketChannel.read(buffer);
+- **异步通道类**：AsynchronousSocketChannel、AsynchronousServerSocketChannel等
+- **差别**：异步通道会立即返回，甚至在I/O完成之前就会返回，所读写的数据会由Future或CompletionHandle进一步处理，connect()和accept()方法也会异步执行，并返回Future。这里不使用选择器
+
+			```java
+		AsynchronousSocketChannel socketChannel = AsynchronousSocketChannel.open(InetSocketAddress address);
+		Future<Void> connected = socketChannel.connect();
+	ByteBuffer buffer = ByteBuffer.allocate(50);
+		//等待连接完成
+		connected.get();
 		
-			//做其他工作
-		
-			//等待读取完成
-			future.get();
-		
-			//回绕并排空缓冲区
-			buffer.flip();
-			//将通道转换成标准输出流
-			WritableByteChannel out = Channels.newChannel(System.out);
-			out.write(buffer);
+		//从连接读取
+		Future<Integer> future = socketChannel.read(buffer);
+	
+		//做其他工作
+		...
+	        
+		//等待读取完成
+		future.get();
+	
+		//回绕并排空缓冲区
+		buffer.flip();
+		//将通道转换成标准输出流
+		WritableByteChannel out = Channels.newChannel(System.out);
+		out.write(buffer);
+	```
 
 ## 3、Channels类
 
 - 作用：简单的工具类，可以将传统的基于I/O的流、阅读器和书写器包装在通道中，也可以从通道中转换出来
 
-			//获取Inpustream
-			InputStream in = Channels.newInputStream(channel);
+			```java
+		//获取Inpustream
+		InputStream in = Channels.newInputStream(channel);
+	```
+	
+	
 
 ## 4、选择器 Selector
 
@@ -139,7 +159,7 @@
 			selectionKey.attach(buffer);
 			//获取附件 attachment
 			Object attacher = selectionKey.attachment();
-		
+			
 			//撤销通道的注册
 			selectionKey.cancle();
 
