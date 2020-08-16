@@ -1,0 +1,12 @@
+#新版本的CentOS 系统里使用’targets’ 取代了运行级别的概念。
+#系统有两种默认的’targets’: 多用户.target 对应之前版本的3 运行级别； 而图形.target 对应之前的5运行级别
+
+
+#查看默认的target
+systemctl get-default
+
+#命令模式
+systemctl set-default multi-user.target
+
+#图形界面
+systemctl set-default graphical.target

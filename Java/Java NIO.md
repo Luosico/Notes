@@ -6,7 +6,7 @@
 	
 	- 流是基于字节的，按顺序一个字节接一个字节地传动数据，处于性能考虑，也可以传送字节数组，仍符合
 	- 通道是基于块的，传送的是缓冲区中的数据块，这些字节必须已经存储在缓冲区中，而且一次读/写一个缓冲区的数据
-- **通道类**: SocketChannel、ServerSocketChannel、DatagramChannel、FileChannel(不能非阻塞，不能使用selector) 等
+- **通道类**: SocketChannel(TCP)、ServerSocketChannel(TCP)、DatagramChannel(UDP)、FileChannel(不能非阻塞，不能使用selector) 等
 - **SocketChannel**
 	
 	- **作用**：可以读写TCP Socket。数据必须编码到 **ByteBuffer** 对象中来完成读/写。每个SockerChannel都与一个对等端Socket相关联。		
@@ -39,14 +39,18 @@
 		//流结尾返回-1
 		//没数据时，阻塞会等待，非阻塞返回0
 	channel.read(ByteBuffer buffer);
+		
 		//散布：从一个源填充多个缓冲区
-		channel.read(ByteBuffer[] buffers);
+		//填满当前buffer后才能向另一个buffer写入数据
+	channel.read(ByteBuffer[] buffers);
 		//从位于offset的缓冲区开始，填充length个缓冲区
-	channel.read(ByteBuffer[] buffers,int offset,int length);
+		channel.read(ByteBuffer[] buffers,int offset,int length);
 		
 		//非阻塞时，不能保证会写入缓冲区的全部内容，不过根据缓冲区基于游标的特性可以保证将其排空
 		channel.write(ByteBuffer buffer);
+		
 		//聚集：将多个缓冲区的数据写入到一个通道
+		//填满当前buffer后才能向另一个buffer写入数据
 		channel.write(ByteBuffer[] buffers);
 		channel.write(ByteBuffer[] buffers,int offset,int length);
 		
@@ -149,6 +153,9 @@
 	//当直到有通道已经准备好，获取就绪通道
 	Set<SelectionKey> set = selector.selectedKeys();
 	
+	//某个线程调用select()方法后阻塞了，该方法会打断中断
+	selector.wakeUp();
+	
 	//关闭选择器
 	selector.close();
 	```
@@ -180,6 +187,38 @@
 		//撤销通道的注册
 		selectionKey.cancle();
 		```
+
+- 实例
+
+  ```java
+  Selector selector = Selector.open();
+  //设置非阻塞
+  channel.configureBlocking(false);
+  //绑定channel
+  SelectionKey key = channel.register(selector, SelectionKey.OP_READ);
+  while(true) {
+    int readyChannels = selector.select();
+    if(readyChannels == 0) continue;
+    Set selectedKeys = selector.selectedKeys();
+    Iterator keyIterator = selectedKeys.iterator();
+    while(keyIterator.hasNext()) {
+      SelectionKey key = keyIterator.next();
+      if(key.isAcceptable()) {
+          // a connection was accepted by a ServerSocketChannel.
+      } else if (key.isConnectable()) {
+          // a connection was established with a remote server.
+      } else if (key.isReadable()) {
+          // a channel is ready for reading
+      } else if (key.isWritable()) {
+          // a channel is ready for writing
+      }
+      //Selector不会自己从已选择键集中移除SelectionKey实例。必须在处理完通道时自己移除。下次该通道变成就绪时，Selector会	//再次将其放入已选择键集中
+      keyIterator.remove();
+    }
+  
+  ```
+
+  
 
 ## 5、缓冲区 Buffer
 
