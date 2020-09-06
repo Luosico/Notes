@@ -1,0 +1,20 @@
+1、计算机网络
+	三次握手、四次挥手
+	TCP协议是如何保持可靠连接的
+	
+2、操作系统
+
+3、Apache的配置文件名：httpd.conf、 .htaccess
+
+4、常用端口： 21	FTP
+			22	SSH
+			23 	Telnet
+			25	SMTP
+			80	HTTP
+			110 POP3
+			443 HTTPS
+
+5、Linux：
+		前台转后台运行：	运行命令的时候在后面加 &
+						ctrl+z暂停， bg %[number]
+		后台转前台：		fg %[number]
