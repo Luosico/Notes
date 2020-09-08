@@ -299,3 +299,46 @@ inner join class_grade on class.grade_id = class_grade.gid;
 
 #### 11、查询学过“张三”老师2门课以上的同学的学号、姓名
 
+```sql
+select 
+	sid,
+	sname
+from student
+where sid in(
+	select
+		student_id
+	from 
+		score
+	inner join course on score.course_id = course.cid
+	where teacher_id in (
+		select 
+			tid
+		from 
+			teacher
+		where tname = '张三'
+	)
+	group by student_id
+	having count(score.course_id)>2
+);
+```
+
+#### 12、查询教授课程超过2门的老师的id和姓名
+
+```sql
+select 
+	tid,
+	tname
+from teacher
+where 
+	tid in(
+		select 
+			teacher_id
+		from 
+			course
+		group by 
+			teacher_id
+		having 
+			count(cid)>2
+	);
+```
+
