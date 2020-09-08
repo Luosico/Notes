@@ -53,7 +53,7 @@ limit 5,10   从第11行开始，返回5行
 
 
 
-### 常用函数
+### 1、常用函数
 
 #### 1、聚集函数
 
@@ -99,9 +99,15 @@ limit 5,10   从第11行开始，返回5行
 - **minute(time)**：从时间中选择出分钟数
 - **weekday(date),dayname(date)**：从时间中选择出今天是周几
 
+#### 5、group by
+
+![image-20200908154940636](C:\Users\11424\AppData\Roaming\Typora\typora-user-images\image-20200908154940636.png)
+
+​	如果直接使用有重复值的列，如 `select * from t group by name`，将会报错；**因为关系数据库就是基于关系的，单元格中是不允许有多个值的**，此时必须使用**聚合函数**来聚集数据，将多行聚集称为一行
 
 
-### 存储过程
+
+### 2、存储过程
 
 ​	**存储过程就是数据库SQL语言层面上的代码封装与复用，经第一次编译后，都不需要再次编译**
 
@@ -353,7 +359,7 @@ create procedure test11()
 
 
 
-### 函数
+### 3、函数
 
 #### 1、函数与存储过程的区别
 
@@ -373,7 +379,7 @@ create function getusername(userid int) returns varchar(32)
 
 
 
-### 自增字段 auto_increment
+### 4、自增字段 auto_increment
 
 ​	**使用 auto_increment的列必须使用了索引，新插入的值每次都会从最大值开始增加，除非显示指定**
 
@@ -426,7 +432,7 @@ MySQL5.1.22版本引入了一个新策略，新增参数innodb_autoinc_lock_mode
 
 
 
-### count(*)/count(常数)/count(field)
+### 5、count(*)/count(常数)/count(field)
 
 **count(*)和count(常数)**表示的是直接查询符合条件的数据库表的行数，包括**NULL**
 
@@ -438,9 +444,7 @@ MySQL5.1.22版本引入了一个新策略，新增参数innodb_autoinc_lock_mode
 
 优化方式是：优先选择最小的非聚簇索引来扫表，前提是查询语句不含where和group by
 
-
-
-### 控制语句
+### 6、控制语句
 
 #### 1、条件语句
 
@@ -536,7 +540,7 @@ end loop;  -- 循环结束
 
 
 
-### 触发器
+### 7、触发器
 
  当对表进行 insert、update、delete 时触发操作
 
@@ -549,9 +553,7 @@ create trigger trigger_name after insert on users
     end;
 ```
 
-
-
-### 分区、分库、分表
+### 8、分区、分库、分表
 
 #### 1、分区
 
