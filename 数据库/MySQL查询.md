@@ -1,6 +1,6 @@
 # MySQL查询
 
-
+https://www.cnblogs.com/runnermark/p/9258140.html
 
 ## 表
 
@@ -274,5 +274,28 @@ where gid in(
 );
 ```
 
+#### 10、查询班级信息，包括班级id、班级名称、年级、年级级别 ( 12为低年级，34为中年级，56为高年级 )
 
+示例：
+
+```
+班级id   班级名称   年级 年级级别
+    1  一年一班   一年级    低
+```
+
+```sql
+select
+	cid as '班级id',
+	caption as '班级名称',
+	gname as '年级',
+	case
+		when gid<=2 then '低'
+		when gid<=4 then '中'
+		else '高'
+		end as '年级级别'
+from class
+inner join class_grade on class.grade_id = class_grade.gid;
+```
+
+#### 11、查询学过“张三”老师2门课以上的同学的学号、姓名
 

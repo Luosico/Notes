@@ -66,7 +66,7 @@
 				-restart 		<重启策略>	设置重启策略，包括always、unless-stopped、on-failed
 				-d				在后台启动容器
 				-p	port1:port2	将主机的port1端口映射到容器内的port2端口
-				-it				将当前shell切换到容器终端，按Ctrl-PQ组合键可以在退出容器的同时还保持容器运行
+				-it				将当前shell切换到容器终端，按Ctrl-PQ组合键可以在退出容器的同时还保持容器运行，输入exit退出shell也会导致容器退出
 			start			启动已经存在的容器，被stop的
 			exec			创建新的bash连接到运行中的容器，此时该bash输入exit将不会导致容器终止
 			stop			手动停止容器，可用start再次启动容器
@@ -121,4 +121,26 @@ Docker通过**存储引擎（新版本采用快照机制）**的方式来实现�
 ### 6、容器
 
 **容器是镜像的运行时实例，共享主机的操作系统/内核**
+
+#### 重启策略
+
+- always	除非通过stop明确停止，否则会一直尝试重启；当deamon重启的时候，停止的容器（即使使用stop）也会重启
+
+- unless-stopped    处于stop停止，不会在deamon重启的时候被重启
+
+- on-failed     在退出容器且返回值不是0的时候重启；就算被stop，在deamon重启的时候，也会被重启
+
+  ```
+  docker container run --name test -it --restart always alpine sh
+  ```
+
+#### 端口
+
+```
+docker container run -d --name webserver -p 80:8080 ...
+```
+
+**将Docker主机的80端口映射到容器内的8080端口**
+
+Docker image inspect ...查看镜像，其中的**Cmd**展示了容器 **将会执行的命令（默认命令）或应用**
 
