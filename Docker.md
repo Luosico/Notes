@@ -62,7 +62,7 @@
 			ls -a			列出全部的容器，包括停止状态的
 			run <options> <image>:<tag> <app>	启动容器，只在第一次运行时使用，将镜像放到容器中
 				-name <name>	指定容器名字
-				--flag		挂在卷
+				--flag		挂载卷
 				-restart 		<重启策略>	设置重启策略，包括always、unless-stopped、on-failed
 				-d				在后台启动容器
 				-p	port1:port2	将主机的port1端口映射到容器内的port2端口
@@ -78,7 +78,36 @@
 
 ### 4、Dockerfile
 
-- 用来构建镜像的文本文件
+**用来构建镜像的文本文件**
+
+#### a、用途
+
+- 对当前应用的描述
+- 知道Docker完成应用的容器化（创建一个包含当前应用的镜像）
+
+#### b、示例( Node.js )
+
+```
+from alpine
+lable maintainer="nigelpoulton@hotmail.com"
+run apk add --update node.js nodejs-npm
+copy . /src
+workdir /src
+run npm install
+expose 8080
+entrypoint ["node","./app.js"]
+```
+
+- **from**       指定的镜像会作为基础镜像层，并且必须是第一条指令
+- **lable**       为镜像指定标签，每个标签都是key-value形式，可通过标签添加自定义元数据，这里指定当前镜像的维护者为“nigelpoulton@hotmail.com”
+- **run**          在from指定的基础镜像层之上，运行指定的命令，新建一个镜像层（每条run指令对应一条）来存储这些安装内容
+- **copy**        从上下文目录（主机中的目录）中复制文件或者目录到容器里指定路径，会新建镜像层
+- **workdir**  指定工作目录，会在构建镜像的每一层中都存在，该目录必须已经存在
+- **expose**    只是让使用明白使用的端口，如果想使得容器与主机的端口有映射关系，必须在**容器启动**的时候加上 **-P 参数**指定端口映射关系
+- **entrypoint**  启动时的默认命令，不会被docker run 的命令行参数指定的指令所覆盖，有多条时仅最后一条生效
+- **cmd**               容器启动时执行的命令，会被docker run 的命令行参数指定的指令所覆盖，有多条时仅最后一条生效
+- **env**                 设置环境变量， env  key1=value1  key2=value2
+- **volume**          定义匿名数据卷。在启动容器时忘记挂载数据卷，会自动挂载到匿名卷;可实现挂载功能，可以将本地文件夹或者其他容器中的文件夹挂在到这个容器中
 
 ### 5、Image 镜像
 
@@ -143,4 +172,27 @@ docker container run -d --name webserver -p 80:8080 ...
 **将Docker主机的80端口映射到容器内的8080端口**
 
 Docker image inspect ...查看镜像，其中的**Cmd**展示了容器 **将会执行的命令（默认命令）或应用**
+
+### 7、持久化数据
+
+#### 1、卷
+
+##### 步骤
+
+- 创建卷
+- 创建容器
+- 将卷挂载到容器的某个目录下
+
+```
+# 创建卷
+docker volume create myvol
+# 挂载到容器中
+docker container run --mount myvol,target=/vol #若卷存在就使用，不存在则会自动创建卷并使用
+```
+
+#### 2、挂载目录或文件
+
+```
+docker container run -v /home/test:/home/test1
+```
 
