@@ -1,0 +1,14 @@
+#因为国外的源速度很慢，需要换成国内的源
+#需要注意的是，注意源的变化，之前就是因为源不可用导致无法下载
+#添加阿里源
+yum-config-manager --add-repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+#安装containerd
+dnf install https://mirrors.aliyun.com/docker-ce/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.13-3.1.el7.x86_64.rpm
+#安装docker
+dnf install docker-ce
+
+
+#设置开机自动启动
+systemctl enable docker.service
+#启动docker
+systemctl start docker.service

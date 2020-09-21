@@ -22,3 +22,48 @@
         }
 ```
 
+
+
+## static代码块、代码块、构造方法的执行顺序
+
+```java
+public class Main {
+    {
+        System.out.println("前");
+    }
+    static {
+        System.out.println("static");
+    }
+
+    public Main(){
+        System.out.println("构造方法");
+    }
+    
+    {
+        System.out.println("后");
+    }
+
+    public static void main(String[] args) {
+        new Main();
+        new Main();
+    }
+
+
+}
+```
+
+结果为：
+
+```
+static
+前
+后
+构造方法
+前
+后
+构造方法
+```
+
+**static代码块最先执行，且只执行一次，代码块每次创建对象都会调用，且会在构造方法前调用**
+
+**static代码块在类加载的初始化阶段执行`<clinit>()`方法是调用**

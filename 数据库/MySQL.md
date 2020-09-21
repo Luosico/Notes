@@ -629,7 +629,7 @@ PARTITION p_catchall VALUES LESS THAN MAXVALUE);
 
 ​	**使用锁的时候，如果表没有定义任何索引，那么InnoDB会创建一个隐藏的聚簇索引并使用这个索引来加记录锁**
 
-
+ 
 
 ## 10、大表优化
 
