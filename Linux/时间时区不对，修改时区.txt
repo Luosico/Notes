@@ -1,0 +1,12 @@
+# 查看时间，中国时区是 CST
+date  - 发现时间不对
+
+# 查看时区,以 -0800结尾才是正确，东8区
+date -R 
+
+# 修改时区
+tzselect
+
+# 此时执行date还是错误
+# 需要覆盖原来的时区
+cp  /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
