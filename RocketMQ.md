@@ -1,6 +1,6 @@
 # RocketMQ
 
-## 消息队列
+## 一、消息队列
 
 ### 定义
 
@@ -15,7 +15,7 @@
 
 
 
-## 组件
+## 二、组件
 
 - Producer
 - Consumer
@@ -24,7 +24,7 @@
 
 
 
-## 生产者
+## 三、Producer
 
 ### 定义
 
@@ -274,7 +274,7 @@ prducer.shutdown();
 
 
 
-## 消费者
+## 四、Consumer
 
 ### 定义
 
@@ -350,7 +350,7 @@ RocketMQ的默认消费模式，**消息进度**都保存在 Broker 端
 
 ### 消息进度保存
 
-也叫消息进度持久化
+也叫 **消息进度持久化**
 
 分为：远程位点管理 和 本地位点管理
 
@@ -361,3 +361,256 @@ RocketMQ的默认消费模式，**消息进度**都保存在 Broker 端
 
 - 定时持久化：通过定时任务来定时持久化
 - 不定时持久化：也叫 Pull-And-Commit，在执行Pull方法的同时，把队列最新消费位点信息发送给Broker
+
+
+
+### 消费方式
+
+#### Pull方式
+
+Client端循环的从Server端拉取消息，主动权在Client手里
+
+用户主动Pull消息，自主管理位点，可以灵活地掌握消费进度和消费速度，适合流计算、消费特别耗时等特殊的消费场景。缺点是需要从代码层面精准地控制消费
+
+#### Push方式
+
+Sever端收到消息后，主动把消息推送给Client端
+
+代码接入非常简单，适合大部分业务场景。缺点是灵活度差
+
+
+
+|                           | Pull                               | Push       | 备注                                                         |
+| ------------------------- | ---------------------------------- | :--------- | ------------------------------------------------------------ |
+| 是否需要主动拉取          | 需要主动拉取各个分区消息           | 自动       | Pull消息灵活；Push使用更简单                                 |
+| 位点管理                  | 用户自行管理或主动提交给Broker管理 | Broker管理 | Pull自动管理位点，消费灵活；Push交由Broker管理               |
+| Topic路由变更是否影响消费 | 否                                 | 否         | Pull需要编码实现路由感知；Push自动执行Rebalance，以适应路由变更 |
+
+
+
+
+
+### 消息过滤
+
+#### Tag过滤
+
+Broker使用Hash做第一次过滤（能快速过滤大量消息），由于可能出现Hash碰撞，在客户端用字符串对比做第二次过滤（漏网之鱼）
+
+```java
+DefaultMQPushConsumer consumer = new DefaultMQConsumer("GroupName");
+consumer.setNamesrvAddr("127.0.0.1:9876;127.0.0.2.9876");
+//订阅 Topic 和 Tag
+consumer.subscribe("TopicName","TagName");
+
+consumer.registerMessageListener(new MessageListenerConcurrently(){
+    @Override
+    public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> msgs,ConsumeConcurrentlyContext context){
+        for(MessageExt msg : msgs){
+            System.out.println("tag=" + msg.getTags);
+        }
+        return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+    }
+});
+
+consumer.start();
+```
+
+
+
+#### SQL92过滤
+
+需要在启动Broker的时候配置参数
+
+```
+enableConsumeQueueExt=true;
+filterSupportRetry=true;
+enablePropertyFilter=true;
+enableCalcFilterBitMap=true;
+```
+
+第一次过滤：使用**Bloom过滤器**的`isHit()`方法做第一次过滤
+
+第二次过滤：执行编译后的 SQL 方法 `evaluate()` 即可过滤出最终结果
+
+```java
+DefaultMQPushConsumer consumer = new DefaultMQConsumer("GroupName");
+consumer.setNamesrvAddr("127.0.0.1:9876;127.0.0.2.9876");
+//订阅
+consumer.subscribe("TopicName",MessageSelector.bySql("age IS NOT NULL and age between 0 and 3"));
+
+consumer.registerMessageListener(new MessageListenerConcurrently(){
+    @Override
+    public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> msgs,ConsumeConcurrentlyContext context){
+        for(MessageExt msg : msgs){
+            System.out.println("tag=" + msg.getTags);
+        }
+        return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+    }
+});
+
+consumer.start();
+```
+
+
+
+#### Filter Server过滤
+
+需要在启动Broker的时候配置参数
+
+```
+//这样可以启动一个过多个过滤服务器
+filterServerNums = 大于0的数字
+```
+
+**每个过滤服务器在启动时会自动注册到NameSrv中**
+
+第一步：用户消费者从NameSrv获取Topic路由信息，同时上传自定义的过滤器实现类源代码到Filter Server中，Filter Server 编译并实例化过滤器类
+
+第二步：用户发送拉取消息请求到Filter Server，Filter Server通过pull consumer 从Broker拉取消息，执行过滤器中的过滤方法，返回过滤后的消息
+
+```java
+DefaultMQPushConsumer consumer = new DefaultMQConsumer("GroupName");
+consumer.setNamesrvAddr("127.0.0.1:9876;127.0.0.2.9876");
+
+ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+File classFile = new File(classLoader.getResource("MessageFilterImpl.java").getFile());
+//过滤器源代码
+String filterCode = MixAll.file2String(classFile);
+
+//订阅                           自定义过滤器实现类的全路径
+consumer.subscribe("TopicName","org.apache.rocketmq.filter.MessageFilterImpl",filterCode);
+
+consumer.registerMessageListener(new MessageListenerConcurrently(){
+    @Override
+    public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> msgs,ConsumeConcurrentlyContext context){
+        for(MessageExt msg : msgs){
+            System.out.println("tag=" + msg.getTags);
+        }
+        return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+    }
+});
+
+consumer.start();
+```
+
+
+
+## 五、NameSrv
+
+临时保存、管理 **Topic 路由信息**（决定Topic消息发送到哪些Broker，消费者从哪些Broker消费消息）
+
+NameSrv 节点是 **无状态** 的，即每两个 Namesrv 节点之间不通信，互相不知道对方存在。**依靠心跳保持数据一致**
+
+在Broker、Producer、Consumer 启动时，**轮询** 配置的全部 Namesrv 节点，拉取路由信息
+
+Broker的 **默认存活时间** 为 **120s**
+
+
+
+### 路由数据结构
+
+通过 ` RouteInfoManager `类实现
+
+```java
+public class RouteInfoManager {
+    private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.NAMESRV_LOGGER_NAME);
+    private final static long BROKER_CHANNEL_EXPIRED_TIME = 1000 * 60 * 2; //Broker 存活时间，默认为 120s
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
+    private final HashMap<String/* topic */, List<QueueData>> topicQueueTable;
+    private final HashMap<String/* brokerName */, BrokerData> brokerAddrTable;
+    private final HashMap<String/* clusterName */, Set<String/* brokerName */>> clusterAddrTable;
+    private final HashMap<String/* brokerAddr */, BrokerLiveInfo> brokerLiveTable;
+    private final HashMap<String/* brokerAddr */, List<String>/* Filter Server */> filterServerTable;
+
+    public RouteInfoManager() {
+        this.topicQueueTable = new HashMap<String, List<QueueData>>(1024);
+        this.brokerAddrTable = new HashMap<String, BrokerData>(128);
+        this.clusterAddrTable = new HashMap<String, Set<String>>(32);
+        this.brokerLiveTable = new HashMap<String, BrokerLiveInfo>(256);
+        this.filterServerTable = new HashMap<String, List<String>>(256);
+    }
+    ...
+}
+```
+
+- **topicQueueTable**
+
+  保存Topic和它所有Queue的信息，包括该Queue位于哪个Broker
+
+- **brokerAddrTable**
+
+  保存 BrokerName 与 Broker 信息的对应关系
+
+- **clusterAddrTable**
+
+  集群和 Broker的对应关系
+
+- **brokerLiveTable**
+
+  当前在线的Broker地址和Broker信息的对应关系
+
+- **filterServerTable**
+
+  过滤服务器信息
+
+
+
+### **Broker定时心跳**
+
+心跳时 Broker 将 Topic 信息和其他信息发送到 Namesrv（通过 `RequestCode.REGISTER_BROKER` 接口将心跳中的Broker信息和Topic信息存储在Namesrv中）
+
+心跳时间为 **30s**
+
+
+
+## 六、Broker
+
+处理各种 TCP 请求和存储消息
+
+
+
+### 存储目录结构
+
+#### **CommitLog**
+
+目录，其中包含具体的commitlog文件，每个文件大小都是1GB，可通过 mapedFileSizeCommitLog 进行配置
+
+#### **ConsumeQueue**
+
+目录，包含该Broker上所有的Topic对应的消费队列文件信息。消费队列文件的格式为 `“./consumequeue/Topic名字/queue id/具体消费队列文件”`
+
+每个消费队列其实是 commitlog 的一个 **索引** ，提供给消费者做拉取消息、更新位点使用 
+
+#### **Index**
+
+目录，全部的文件都是按照消息key创建的hash索引。文件名是用创建时的时间戳命名的
+
+#### **Config**
+
+目录，保存了当前Broker中全部的Topic、订阅关系和消费进度。会定期持久化到磁盘中
+
+#### **abort**
+
+Broker是否异常关闭的标志。正常关闭该文件会被删除
+
+#### **checkpoint**
+
+Broker最近一次正常运行时的状态，比如最后一次正常刷盘的时间、最后一次正确索引的时间
+
+
+
+### 消息存储流程
+
+**1. Broker 接受客户端发送消息的请求并做预处理**
+
+ 
+
+**2. Broker存储前预处理消息**
+
+
+
+**3. 执行 `DefaultMessageStore.putMessage() `方法进行消息校验和存储模块检查**
+
+
+
+**4. 执行 `CommitLog.putMessage()` 方法，将消息写入 CommitLog**

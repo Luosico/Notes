@@ -1,0 +1,4 @@
+1、解压缩 zookeeper-xxx.tar.gz
+2、复制一份配置文件zoo_sample.cfg并命名为zoo.cfg
+3、修改配置文件，修改dataDir指定的路径，可修改为../data/
+4、在bin目录下启动 zkServer.cmd

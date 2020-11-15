@@ -1,0 +1,12 @@
+CentOS容器内无法使用 systemctl
+docker container run --name v2ray -d -it -p 10140:10140 --privileged=true  centos /usr/sbin/init
+
+--privileged=true  赋予root权限
+/usr/sbin/init
+
+===========================
+
+docker容器内可以ping通ip地址，无法ping通域名
+firewall-cmd --zone=public --add-masquerade --permanent
+firewall-cmd --reload
+systemctl restart docker

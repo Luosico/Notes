@@ -1,0 +1,40 @@
+-----------------
+下载工程
+-----------------
+从GitHub导入dubbo-admin工程
+
+
+
+
+-----------------
+npm 构建前端
+-----------------
+1、安装npm
+2、进入 dubbo-admin-ui目录下
+3、运行 	npm install   	下载依赖
+		npm run build	构建项目，会生成node_moudules文件夹
+		npm run dev		运行
+
+
+
+-----------------
+启动zookeeper
+-----------------
+在本机zookeeper的bin目录下启动zookeeper
+
+
+
+
+
+
+-----------------
+运行项目启动后端
+-----------------			
+运行dubbo-admin-server的DubboAdminApplication启动项目
+
+
+
+
+通过 http://localhost:8082 访问dubbo-admin
+用户名  	root
+密 码	root
