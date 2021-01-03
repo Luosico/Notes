@@ -1,0 +1,51 @@
+指令
+	带有 v- 前缀的特殊 attribute	
+	v-once	一次性插值，当数据发生改变时，插值出的内容不会更新
+	v-html	该标签的内容会替换成property，并直接作为HTML——会忽略
+	v-on 	用于监听DOM事件
+	v-bind	设置HTML attribute
+	v-if	根据表达式的值的真假来插入/移除该标签元素
+	v-model
+
+
+生命周期钩子
+	created:{}
+	mounted:{}
+	updated:{}
+	destroyed:{}
+
+
+计算属性
+	//1、默认只有 getter
+	computed:{
+		a: function(){
+			//只要b或c发生改变，a也会跟着发生改变
+			return this.b + this.c;
+		}
+	}
+
+	//2、提供 getter和 setter
+	computed:{
+		a: {
+			//getter
+			get: function(){
+				return this.b + this.c;
+			},
+			//setter
+			//给a设置值，同时设置b和c的值
+			set: function(newValue){
+				this.b = '';
+				this.c = '';
+			}
+		}
+	}
+
+
+侦听属性
+	//适合在数据变化时执行异步或开销较大的操作时
+	watch:{
+		a: function(val){
+			//侦听a，只有a发生改变时，才会执行这个函数
+			this.b = a + 'Hello';
+		}
+	}

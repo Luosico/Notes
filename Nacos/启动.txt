@@ -1,0 +1,17 @@
+默认采用集群方式启动
+
+# 单机启动
+cmd	startup.cmd -m standalone
+bash startup.sh -m standslone
+# 或者直接startup.cmd
+set MODE="cluster"
+改为
+set MODE="stanalone"
+
+
+# 关闭
+cmd shutdown.cmd
+sh shutdown.sh
+
+
+# 修改配置 /conf/application.properties
