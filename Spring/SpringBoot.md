@@ -315,3 +315,56 @@ Spring通过`refresh()`方法对容器进行初始化和资源的载入
 
 ## AOP
 
+
+
+## 注解
+
+### @ConfigurationProperties
+
+这个注解能自动将配置文件 `application.properties` 中的属性组装到对象中，一般会设置前缀
+
+例如MyBatis的配置文件
+
+```java
+@ConfigurationProperties(
+    prefix = "mybatis"
+)
+public class MybatisProperties {
+    public static final String MYBATIS_PREFIX = "mybatis";
+    private static final ResourcePatternResolver resourceResolver = new PathMatchingResourcePatternResolver();
+    private String configLocation;
+    private String[] mapperLocations;
+    private String typeAliasesPackage;
+    private Class<?> typeAliasesSuperType;
+    private String typeHandlersPackage;
+    private boolean checkConfigLocation = false;
+    private ExecutorType executorType;
+    private Class<? extends LanguageDriver> defaultScriptingLanguageDriver;
+    private Properties configurationProperties;
+    @NestedConfigurationProperty
+    private Configuration configuration;
+
+    public MybatisProperties() {
+    }
+
+    public String getConfigLocation() {
+        return this.configLocation;
+    }
+
+    public void setConfigLocation(String configLocation) {
+        this.configLocation = configLocation;
+    }
+
+    public String[] getMapperLocations() {
+        return this.mapperLocations;
+    }
+
+    public void setMapperLocations(String[] mapperLocations) {
+        this.mapperLocations = mapperLocations;
+    }
+    
+    ...
+        
+}
+```
+

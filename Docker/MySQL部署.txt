@@ -1,0 +1,22 @@
+docker run -d --restart=unless-stopped -p 31000:3306 -v /home/docker_volume/mysql/data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=123456 -e TZ=Asia/Shanghai --name mysql-test  mysql
+
+#重启策略
+--restart=unless-stopped
+
+#挂载目录
+-v /home/docker_volume/mysql/data:/var/lib/mysql
+
+#设置MySQL密码
+-e MYSQL_ROOT_PASSWORD=123456
+
+#设置时区
+-e TZ=Asia/Shanghai
+
+#进入容器
+docker exec -it mysql-test bash
+
+#登录mysql
+mysql -u root -p
+
+#修改密码
+alter user 'root'@'localhost' identified by '123456'

@@ -93,3 +93,125 @@ SqlSessionFactory层面上的二级缓存默认是不开启的，二级缓存的
 - 根据时间表，比如No Flush Interval,（CNFI没有刷新间隔），缓存不会以任何时间顺序来刷新。
 - 缓存会存储列表集合或对象(无论查询方法返回什么)的1024个引用
 - 缓存会被视为是read/write(可读/可写)的缓存，意味着对象检索不是共享的，而且可以安全的被调用者修改，不干扰其他调用者或线程所做的潜在修改。
+
+
+
+## 四、Mapper.xml
+
+### 1、组成
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--对应接口的全限定名称-->
+<mapper namespace="com.mapper.UserMapper">
+    <insert id="insertUser">
+        insert into user(userName,userPassword) values(#{userName},#{userPassword})
+    </insert>
+
+    <select id="selectUserName" resultType="Integer">
+        select count(userName) from user where userName=#{userName}
+    </select>
+    <select id="selectUser" resultType="java.lang.Integer">
+        select count(userName) from user where userName=#{userName} and userPassword=#{userPassword}
+    </select>
+</mapper>
+```
+
+- **mapper**：XML的根元素
+
+  - **namespace**：定义当前XML的命名空间，一般写对应接口的全限定名称
+
+- **select/insert/update/delete**：`slq`语句放在这个标签中
+
+  - **id**：定义当前`sql`的唯一的 `id`
+
+- **resultType**：定义返回类型，没用`typeAliases`配置包的别名，这里就需要写上类的全限定名称
+
+- **resultMap**：设置返回值的类型和映射关系
+
+  - **id**：唯一，对应sql语句的id
+  - **type**：配置查询列所映射到的Java对象类型
+  - **extends**：可配置当前resultMap继承其他的resultMap，属性值为继承resultMap的id
+
+  ```xml
+  <mapper namespace="com.mapper.UserMapper">
+      
+      <resultMap id="userMap" type="com.luosico.mapper.User">
+      	<id property="id" column="id"/>
+          <result property="username" column="user_name"/>
+          <result property="img" column="img" jdbcType="BLOB"/>
+      </resultMap>
+      
+      <select id="selectUser" resultMap="userMap">
+          select * from user where userName=#{userName}
+      </select>
+  </mapper>
+  ```
+
+  
+
+  ### 2、自增主键
+
+  #### 2.1 支持主键自增的数据库，如 MySQL
+
+  MyBatis会使用JDBC的 getGeneratedKeys 方法来取出由数据库内部生成的主键，获得主键值后将其赋值给 keyproperty 配置的 id 属性。当设置多个属性时，使用逗号隔开，这种情况下通常还需要设置 keyColumn 属性
+
+  ```xml
+  <insert id="insertUser" useGeneratedKeys="true" keyProperty="id">
+  	insert into user(
+      	user_name,
+      	password,
+      	create_time)
+      values(
+      	#{userName},
+      	#{password},
+      	#{createTime, jdbcType=TIMESTAMP }
+      )
+  </insert>
+  
+  # 另一种写法
+  <insert id="insertUser">
+  	insert into user(
+      	user_name,
+      	password,
+      	create_time)
+      values(
+      	#{userName},
+      	#{password},
+      	#{createTime, jdbcType=TIMESTAMP }
+      )
+  </insert>
+  
+  <selectKey keyColumn="id" resultType="long" keyProperty="id" order="AFTER">
+  	select last_insert_id()
+  </selectKey>
+  ```
+
+  #### 2.2 不支持主键自增的数据库，如 Oracle
+
+  先使用序列得到一个值，然后将这个值赋给id，再将数据插入数据库
+
+  ```xml
+  <insert id="insertUser">
+  	insert into user(
+      	id,
+      	user_name,
+      	password,
+      	create_time)
+      values(
+      	#{id},
+      	#{userName},
+      	#{password},
+      	#{createTime, jdbcType=TIMESTAMP }
+      )
+  </insert>
+  
+  <selectKey keyColumn="id" resultType="long" keyProperty="id" order="BEFORE">
+  	select SEQ_ID.nextval from dual
+  </selectKey>
+  ```
+
+  **order** 属性的设置和使用的数据库有关。MySQL是 `AFTER`, Oracle是 `BEFORE`
