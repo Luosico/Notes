@@ -63,7 +63,6 @@ brpoplpush			同上，如果source-key为空，那么在timeout秒之内阻塞�
 ```
 ### set  
 集合通过使用散列表来保证存储的每个字符串都是各不相同的
-	
 
 ```
 sadd				将给定元素添加到集合
@@ -149,7 +148,7 @@ Redis 可以通过 **MULTI，EXEC，DISCARD 和 WATCH** 等命令来实现事务
 
 - 事务不能嵌套
 
-		​    multi						标记一个事务块的开始
+		    multi						标记一个事务块的开始
 	​	exec						 执行事务块内的命令
 	​	discard					取消该事务，放弃执行事务块内的所有命令，之前执行完成的会恢复到之前，在该命令之后执行redis命令就不是在事务了
 	​	watch					  监视一个或多个key，如果在事务执行之前key被其他命令所改动，那么事务将被打断
@@ -192,6 +191,8 @@ Java中Redis事务的实现：
 		persist				移除键的过期时间
 		ttl					查看给定键距离过期时间还有多少秒
 		pttl				查看给定键距离过期时间还有多少毫秒
+	```
+	
 	```
 
 ### 5.1 过期数据的删除策略
@@ -251,6 +252,8 @@ Java中Redis事务的实现：
 		sync				Redis服务器之间使用该命令，如果主服务器目前没有在执行bgsave，
 							或者主服务器并非刚刚执行完bgsave，那么主服务器就会执行bgsave
 	```
+	
+	```
 #### AOF
 - 通过在配置文件的appendonly yes 配置选项来打开
 		
@@ -268,13 +271,15 @@ Java中Redis事务的实现：
 - 可以在不使用事务的前提下进行批量操作，减少与服务器的交互次数
 	
 		```
-   	// 开启流水线
-	    Pipeline pipeline = jedis.pipelined();
+  	// 开启流水线
+		Pipeline pipeline = jedis.pipelined();
 		pipeline.get("key");
-   	//只执行同步但不返回结果
-       pipeline.sync();
-       // 以list的形式返回执行过的命令的结果
-       List<Object> result = pipeline.syncAndReturnAll();
+  	//只执行同步但不返回结果
+  	 pipeline.sync();
+  	 // 以list的形式返回执行过的命令的结果
+  	 List<Object> result = pipeline.syncAndReturnAll();
+   ```
+  
    ```
 
 
@@ -290,18 +295,19 @@ Java中Redis事务的实现：
 	- 该命令执行后，查询该键没问题，若覆盖该键的值将会失败
 		
   		```
+  
    	//获得锁,其实就是通过这个键的存在与否间接的设置锁
-     	jedis.setnx("lock","symbol");
-   
-     	...
-     
-	      	//释放锁
-      	jedis.del("lock");
+   	jedis.setnx("lock","symbol");
+   	 
+   	...
+	 	   
+   	  	//释放锁
+	 		jedis.del("lock");
 	   ```
 	   
 	- 带有超时限制特性，避免锁的持有者崩溃时不会自动释放锁
 	
-			```
+	   ```
 			//获得锁
 			jedis.setnx("lock","symblo");
 			//设置锁的超时时间
