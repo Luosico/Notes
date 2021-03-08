@@ -120,6 +120,8 @@ SqlSessionFactory层面上的二级缓存默认是不开启的，二级缓存的
 </mapper>
 ```
 
+
+
 - **mapper**：XML的根元素
 
   - **namespace**：定义当前XML的命名空间，一般写对应接口的全限定名称
@@ -153,9 +155,9 @@ SqlSessionFactory层面上的二级缓存默认是不开启的，二级缓存的
 
   
 
-  ### 2、自增主键
+### 2、自增主键
 
-  #### 2.1 支持主键自增的数据库，如 MySQL
+#### 2.1 支持主键自增的数据库，如 MySQL
 
   MyBatis会使用JDBC的 getGeneratedKeys 方法来取出由数据库内部生成的主键，获得主键值后将其赋值给 keyproperty 配置的 id 属性。当设置多个属性时，使用逗号隔开，这种情况下通常还需要设置 keyColumn 属性
 
@@ -215,3 +217,153 @@ SqlSessionFactory层面上的二级缓存默认是不开启的，二级缓存的
   ```
 
   **order** 属性的设置和使用的数据库有关。MySQL是 `AFTER`, Oracle是 `BEFORE`
+
+
+
+## 五、动态SQL
+
+### 5.1 if
+
+```xml
+ select 
+ 	id,
+ 	name
+ from 
+ 	user
+ where 
+ 	1=1
+ 	<if test="name!=null and name like '%hello%'">
+ 		and name = #{name}
+ 	</if>
+ 	<if test="id!=null and id like '123'">
+ 		and id = #{id}
+ 	</if>
+```
+
+
+
+### 5.2 choose
+
+一个choose中至少有一个when，0或1个otherwise
+
+```xml
+	select 
+		id,
+		name
+	from 
+		user
+	where 
+		1=1
+	<choose>
+		<when test=" id != null ">
+			and id = #{id}
+		</when>
+		<when test=" name != null ">
+			and name = #{name}
+		</when>
+		<otherwise>
+		and 1=2
+		</otherwise>
+	</choose>
+```
+
+
+
+### 5.3 trim
+
+where和set 都属于 trim 的一种具体用法，底层是通过 `TrimSqlNode` 实现的
+
+#### 5.3.1  where
+
+如果该标签包含的元素中有返回值，就插入一个 `where`；如果where后面的字符串是以 `and` 和 `or` 开头的，就将它们剔除，当 if 条件都不满足时，where 元素中没有内容，所以在 SQL 中不会出现 where
+
+```xml
+	<select>
+		select 
+			id,
+			name
+		from 
+			user
+		<where>
+			<if test="name!=null">
+            	and name = #{name}
+        	</if>
+        	<if test="id!=null">
+        		and id = #{id}
+        	</if>
+		</where>
+	</select>
+```
+
+#### 5.3.2  set
+
+ 如果该标签包含的元素中有返回值，就插入一个 `set`；如果 set 后面的字符串是以**逗号**结尾的，就将这个逗号剔除
+
+```xml
+<update>
+	update
+  		user
+    <set>
+    	<if test="name!=null and name!=''">
+        	name = #{name},
+        </if>
+        <if test = "id!=null and id!=''">
+        	id = #{id},
+        </if>
+        id = #{id},
+    </set>
+    where id = #{id}
+</update>
+```
+
+#### 5.3.3 trim标签属性
+
+- prefix：当trim元素内包含内容时，会给内容增加prefix指定的前缀
+
+- prefixOverrides：当trim元素内包含内容时，会把内容中匹配的前缀字符串去掉
+
+- suffix：当trim元素内包含内容时，会给内容增加suffix指定的后缀
+
+- suffixOverrides：当trim元素内包含内容时，会把内容中匹配的后缀字符串去掉
+
+    ![IMG_0700](https://raw.githubusercontent.com/Luosico/Typora/main/img/20210308144821.JPG)
+
+
+
+### 5.4 foreach
+
+**`foreach` 可以对数组、Map 或实现了 Iterable 接口（如List、Set）的对象进行遍历**
+
+数组在处理时会转换为List对象，Map就还是Map对象
+
+因此foreach遍历的对象可以分为：Iterable 类型和 Map 类型
+
+```xml
+<select>
+	select
+    	id,
+    	name
+    from
+    	user
+    where id in
+    <foreach collection="list" open="(" close=")" separator="," item="id" index="i">
+    	#{id}
+    </foreach>
+</select>
+```
+
+
+
+#### 5.4.1 属性
+
+![IMG_0701](https://raw.githubusercontent.com/Luosico/Typora/main/img/20210308145410.JPG)
+
+
+
+
+
+### 5.5 bind
+
+可以使用 OGNL 表达式创建一个变量并将其绑定到上下文中
+
+可以用来试用不容数据库的SQL语句

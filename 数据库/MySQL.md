@@ -684,3 +684,25 @@ PARTITION p_catchall VALUES LESS THAN MAXVALUE);
 - **利用 redis 生成 id :** 性能比较好，灵活方便，不依赖于数据库。但是，引入了新的组件造成系统更加复杂，可用性降低，编码更加复杂，增加了系统成本。
 - **Twitter的snowflake算法** ：Github 地址：https://github.com/twitter-archive/snowflake。
 - **美团的[Leaf](https://tech.meituan.com/2017/04/21/mt-leaf.html)分布式ID生成系统** ：Leaf 是美团开源的分布式ID生成器，能保证全局唯一性、趋势递增、单调递增、信息安全，里面也提到了几种分布式方案的对比，但也需要依赖关系数据库、Zookeeper等中间件。感觉还不错。美团技术团队的一篇文章：https://tech.meituan.com/2017/04/21/mt-leaf.html 。
+
+
+
+
+
+## 11. 锁
+
+**每种MySQL存储引擎都可以实现自己的`锁策略`和`锁粒度`**
+
+### 11.1 锁的种类
+
+- **表锁 (table lock)**
+
+    是MySQL中国最基本的锁策略，并且是开销最小的策略
+
+    服务器会为诸如 `alter table` 之类的语句使用表锁，而忽略存储引擎的锁机制
+
+- **行级锁 (row lock)**
+
+    只在 **存储引擎层** 实现
+
+    可以最大程度的支持并发处理，同时也带来了最大的锁消耗
