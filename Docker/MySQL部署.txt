@@ -1,5 +1,8 @@
 docker run -d --restart=unless-stopped -p 50002:3306 -v /home/docker_volume/mysql/data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=2iIGlx6BDJd2 -e TZ=Asia/Shanghai --name mysql  mysql
 
+docker run -d  -p 3306:3306  -e MYSQL_ROOT_PASSWORD=123456 -e TZ=Asia/Shanghai --name mysql  mysql
+
+
 #重启策略
 --restart=unless-stopped
 

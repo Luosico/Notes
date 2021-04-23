@@ -1,0 +1,46 @@
+# docker-compose.yml
+
+version: "2"
+services:
+  nacos:
+    image: nacos/nacos-server
+    container_name: nacos
+    ports:
+      - "8848:8848"
+    #环境变量,多个环境变量通过 env_file 指定文件来给出环境变量
+    env_file:
+      - ./nacos-standlone-mysql.env
+    depends_on:
+      - mysql
+    networks:
+      - common-net
+  mysql:
+    container_name: mysql
+    image: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+    networks:
+      - common-net
+    ports:
+      - "3306:3306"
+networks:
+  common-net:
+    external: true
+
+
+
+# nacos-standlone-mysql.env
+PREFER_HOST_MODE=hostname
+MODE=standalone
+SPRING_DATASOURCE_PLATFORM=mysql
+MYSQL_SERVICE_HOST=mysql
+MYSQL_SERVICE_DB_NAME=nacos_config
+MYSQL_SERVICE_PORT=3306
+MYSQL_SERVICE_USER=root
+MYSQL_SERVICE_PASSWORD=123456
+
+
+# 文件名非默认，docker-compose必须带上 -f filename
+docker-compose -f nacos.yml  up -d
+
+docker-compose restart

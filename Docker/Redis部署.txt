@@ -1,5 +1,7 @@
 docker run -d -p 50001:6379 -v /etc/redis/redis.conf:/etc/redis/redis.conf --name redis --restart='always'  redis redis-server /etc/redis/redis.conf
 
+docker run -d -p 6379:6379  --name redis  redis 
+
 
 --requirepass 'Dmgx0kJLcJer'
 
