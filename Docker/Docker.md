@@ -106,7 +106,7 @@ entrypoint ["node","./app.js"]
 
 - **from**       指定的镜像会作为基础镜像层，并且必须是第一条指令
 - **lable**       为镜像指定标签，每个标签都是key-value形式，可通过标签添加自定义元数据，这里指定当前镜像的维护者为“nigelpoulton@hotmail.com”
-- **run**          在from指定的基础镜像层之上，运行指定的命令，新建一个镜像层（每条run指令对应一条）来存储这些安装内容
+- **run**          在from指定的基础镜像层之上，运行指定的命令，新建一个镜像层（每条run指令对应一条）来存储这些安装内容, **一般用来安装软件包**
 - **copy**        从上下文目录（主机中的目录）中复制文件或者目录到容器里指定路径，会新建镜像层
 - **workdir**  指定工作目录，会在构建镜像的每一层中都存在，该目录必须已经存在
 - **expose**    只是让使用明白使用的端口，如果想使得容器与主机的端口有映射关系，必须在**容器启动**的时候加上 **-P 参数**指定端口映射关系
@@ -217,8 +217,8 @@ docker container run -v /home/test:/home/test1
 ### 1、步骤
 
 	1. 编写 `Dockerfile` 来定义应用的运行环境，让它能到处复制
- 	2. 使用YAML文件定义组成应用的服务，默认使用文件名`docker-comopose.yml`，也可以使用`-f`参数指定具体文件
- 	3. 运行命令`docker-compose up`启动compose来运行你的应用
+	2. 使用YAML文件定义组成应用的服务，默认使用文件名`docker-comopose.yml`，也可以使用`-f`参数指定具体文件
+	3. 运行命令`docker-compose up`启动compose来运行你的应用
 
 ```yml
 version: "3.8" //指定Compose file格式版本，对应与Docker Engine release版本
