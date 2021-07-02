@@ -11,7 +11,7 @@
 	
 	- **作用**：可以读写TCP Socket。数据必须编码到 **ByteBuffer** 对象中来完成读/写。每个SockerChannel都与一个对等端Socket相关联。		
 	
-			```java
+		```java
 		//通过静态open方法创建SocketChannel对象
 		ServerChannel channel = SocketChannel.open();
 		ServerChannel channel = SocketChannel.open(SocketAddress socketAddress)
@@ -31,10 +31,12 @@
 		channel.isConnected()
 		//连接仍在建立但尚未打开时返回true
 		channel.isConnectionPending();
+		
 		```
+		
 	- **读写数据**：必须使用 **ByteBuffer** 缓冲区  
 		
-			```java
+		```java
 		//通道会用尽可能多的数据填充缓冲区，然后返回放入的字节数
 		//流结尾返回-1
 		//没数据时，阻塞会等待，非阻塞返回0
@@ -58,6 +60,7 @@
 		channel.close();
 		//判断通道是否关闭
 		channel.isOpen();
+		
 		```
 - **ServerSocketChannel**
 	
@@ -69,8 +72,10 @@
 	   	//获得相应对等端(peer)的ServerSocket
 	   	ServerSocket serverSocket = serverChannle.socket();
 	   	//绑定端口，两种方式
-   	serverChannel.bind(InetSocketAddress address);
-	   	serverSocket.bind(InetSocketAddress address);
+     ```
+	
+	 	serverChannel.bind(InetSocketAddress address);
+	 	serverSocket.bind(InetSocketAddress address);
 	   ```
 	
 	- 接受连接
@@ -79,7 +84,7 @@
 			//阻塞模式下，一直等待直到接受的连接建立成功
 			//非阻塞模式下,没有入站连接立即返回 null
 			SocketChannel socketChannel = serverChannel.accept();
-		```
+	   ```
 
 
 
@@ -88,7 +93,7 @@
 - **异步通道类**：AsynchronousSocketChannel、AsynchronousServerSocketChannel等
 - **差别**：异步通道会立即返回，甚至在I/O完成之前就会返回，所读写的数据会由Future或CompletionHandle进一步处理，connect()和accept()方法也会异步执行，并返回Future。这里不使用选择器
 
-			```java
+	```java
 		AsynchronousSocketChannel socketChannel = AsynchronousSocketChannel.open(InetSocketAddress address);
 		Future<Void> connected = socketChannel.connect();
 	ByteBuffer buffer = ByteBuffer.allocate(50);
@@ -97,13 +102,13 @@
 		
 		//从连接读取
 		Future<Integer> future = socketChannel.read(buffer);
-	
+		
 		//做其他工作
 		...
-	        
+		    
 		//等待读取完成
 		future.get();
-	
+		
 		//回绕并排空缓冲区
 		buffer.flip();
 		//将通道转换成标准输出流
@@ -121,6 +126,7 @@
 	```
 	
 	
+	```
 
 ## 4、选择器 Selector
 
@@ -166,12 +172,12 @@
 		
 	- 一个SelectionKey对应一个Channel
 		
-			```java
+		```java
 		//测试SelectionKey对象能进行哪些操作
 		public final boolean isAcceptable()
 		public final boolean isConnectable()
-	public final boolean isReadable()
-	public final boolean isWritable()
+		public final boolean isReadable()
+		public final boolean isWritable()
 		```
 		
 		
@@ -186,6 +192,7 @@
 		
 		//撤销通道的注册
 		selectionKey.cancle();
+		
 		```
 
 - 实例
@@ -252,11 +259,10 @@
 		
 		- 它创建的缓冲区基于Java数组实现，可以通过array()和arrayOffset()来访问，修改会反映到缓冲区中，反之亦然，实际上暴露了缓冲区的私有数据，谨慎使用
 		
-				```java
+			```java
 			ByteBuffer buffer = ByteBuffer.allocate(100);
 			byte[] array = buffer.array();
 			```
-			
 		
 	- allocatDirect()
 		
@@ -264,29 +270,28 @@
 	- wrap()
 		- 常用与输出		
 		
-				```java
+			```java
 			byte[] date = "Hello".getBytes();
 			ByteBuffer buffer = ByteBuffer.wrap(data);
 			```
-			
-			
 	
 - 填空和排空
 	
-		```java
+	```java
 	buffer.put(byte)  //向缓冲区写入一个数据，并位置加1
-buffer.get(int)  //从缓冲区读取一个数据，并位置减1
+	buffer.get(int)  //从缓冲区读取一个数据，并位置减1
 	
 	buffer.get(byte[] dst);
 	buffet.get(byte[] dst,int offset,int length);	//从缓冲区中向数组的offset位置写入length长度的数据
 	
 	buffer.put(byte[] array);
 	buffer.put(byte[] array,int offset,int length);	//从数组的offset位置读取length长度到缓冲区
+	
 	```
 	
 - 改变字节顺序(默认为大端模式，big-endian)
 	
-		```java
+	```java
 	buffer.order(ByteOrder.LITTLE_ENDIAN)； //小端模式
 	buffer.order(IntOrder.LITTLE_ENDIAN)
 	```
@@ -294,9 +299,10 @@ buffer.get(int)  //从缓冲区读取一个数据，并位置减1
 - 视图缓冲区
 	- 可以将当前缓冲区转换成其他类型的缓冲区
 		
-			```java
+		```java
 		IntBuffer intbuffer = byteBuffer.asIntBuffer();
 		FloatBuffer floatBuffer = byteBuffer.asFloatBuffer();
+		
 		```
 		
 	- 非阻塞模式不能保证缓冲区在排空后仍能以int、double、或char等类型的边界对齐。向非阻塞通道写入一个ine或double的半个字节是完全可能的

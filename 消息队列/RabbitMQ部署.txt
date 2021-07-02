@@ -1,0 +1,7 @@
+使用Docker进行部署
+
+# 拉取镜像
+# rabbitmq 不带 web 界面
+# rabbitmq:management 带 web 界面
+
+docker run -itd --name rabbitmq -e RABBITMQ_DEFAULT_USER=user -e RABBITMQ_DEFAULT_PASS=123456 -p 15672:15672 -p 5672:5672 rabbitmq:management
