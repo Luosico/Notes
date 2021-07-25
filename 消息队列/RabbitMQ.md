@@ -159,6 +159,26 @@ public class RabbitConsumer {
 
 
 
+### 备份交换器
+
+Alternate Exchange，简称 AE
+
+备份交换器可以将未被路由的消息存储起来，再在有需要的时候去处理这些消息。例如未设置mandatory的时候，或者不复杂化生产者的逻辑去使用RetrunListener。
+
+**可在exchangeDeclare添加参数实现，或者通过策略Policy**，前者的优先级大于后者，会覆盖后者
+
+```java
+// 设置备份交换器参数
+Map<String, Object> args = new HashMap<>();
+args.put("alternate-exchange", "name");
+
+channel.exchangeDeclare("exchangeName", "direct", true, false, args);
+
+// 这里声明了两个交换器：exchangeName 和 name
+```
+
+
+
 ## 四、常用方法
 
 ### exchangeDeclare
@@ -244,6 +264,10 @@ void basicPublish(String exchange, String routingKey, boolean mandatory, BasicPr
 void basicPublish(String exchange, String routingKey, boolean mandatory, boolean immediate, BasicProperties props, byte[] body);
 ```
 
+- mandatory：为 true，交换器无法根据自身的类型和路由键找到一个符合条件的队列，会调用 Basic.Return 将消息返回给生产者；为false，直接丢弃
+
+- immediate：现在官方不推荐使用，因为会影响镜像队列的性能
+
 **普通发送**
 
 ```java
@@ -292,6 +316,22 @@ channel.basicPublish(exchangeName, routingKey,
 ```
 
 
+
+**生产者处理返回的消息**
+
+mandatory = ture，返回的消息
+
+```java
+channel.basicPublish(EXCHANGE_NAME, "", true, ...);
+
+channel.addReturnListener(new ReturnListener(){
+    public void handleReturn(int replyCode, String replyText, String exchange, String routinKey,
+                            AMQP.BasicProperties basicProperties, byte[] body) throw IOException{
+        String message = new String(body);
+        System.out.println(message);
+    }
+});
+```
 
 
 
