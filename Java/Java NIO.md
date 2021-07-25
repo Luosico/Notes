@@ -66,25 +66,21 @@
 	
 	- 作用：只能接受入站连接，无法读取、写入或连接ServerSocketChannel
 	
-	   ```java
+	```java
 	   	//获取ServerSocketChannel对象
 	   	ServerSockerChannel serverChannel = ServerSocketChannel.open();
 	   	//获得相应对等端(peer)的ServerSocket
 	   	ServerSocket serverSocket = serverChannle.socket();
 	   	//绑定端口，两种方式
-     ```
-	
 	 	serverChannel.bind(InetSocketAddress address);
 	 	serverSocket.bind(InetSocketAddress address);
-	   ```
-	
+	```
 	- 接受连接
-	
-			```java
-			//阻塞模式下，一直等待直到接受的连接建立成功
-			//非阻塞模式下,没有入站连接立即返回 null
-			SocketChannel socketChannel = serverChannel.accept();
-	   ```
+	```java
+		//阻塞模式下，一直等待直到接受的连接建立成功
+		//非阻塞模式下,没有入站连接立即返回 null
+		SocketChannel socketChannel = serverChannel.accept();
+	```
 
 
 
@@ -116,17 +112,18 @@
 		out.write(buffer);
 	```
 
+
+
 ## 3、Channels类
 
 - 作用：简单的工具类，可以将传统的基于I/O的流、阅读器和书写器包装在通道中，也可以从通道中转换出来
 
-			```java
+	```java
 		//获取Inpustream
 		InputStream in = Channels.newInputStream(channel);
 	```
-	
-	
-	```
+
+
 
 ## 4、选择器 Selector
 
@@ -136,7 +133,7 @@
 
 - **作用**：能够选择读写时**不阻塞**的Socket,通过将不同的通道注册到一个Selector对象，每个通道都将分配有一个SelectionKey
 	
-		**注意是非阻塞通道**
+	**注意是非阻塞通道**
 	
 	```java
 	//获取Selector对象
@@ -219,7 +216,7 @@
       } else if (key.isWritable()) {
           // a channel is ready for writing
       }
-      //Selector不会自己从已选择键集中移除SelectionKey实例。必须在处理完通道时自己移除。下次该通道变成就绪时，Selector会	//再次将其放入已选择键集中
+      //Selector不会自己从已选择键集中移除SelectionKey实例。必须在处理完通道时自己移除。下次该通道变成就绪时，Selector会再次将其放入已选择键集中
       keyIterator.remove();
     }
   
