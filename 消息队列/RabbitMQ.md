@@ -431,8 +431,84 @@ requeue 为 false，同一条消息会被分配给与之前相同的消费者
 
 
 
+## 七、队列
+
+
+
 ### 死信队列
 
 basicReject 和 basicNeck 中 requeue 设置为false，相当于启用了 “**死信队列**”功能。
 
-死信队列可以通过检测被拒绝或者未送达的消息来追踪问题
+死信队列可以通过检测被拒绝或者未送达的消息来追踪问题。
+
+**当消息在队列中变成死信之后，会被发送到死信交换器（可以存在多个，可当做普通的交换器使用）中，也就是 DLX （Dead-Letter-Exchange），绑定DLX的队列就称之为死信队列**
+
+
+
+**消息成为死信的情况：**
+
+- 消息被拒绝（reject/neck），并且设置 requeue 参数为false
+- 消息过期
+- 队列达到最大长度
+
+```java
+channel.exchangeDeclare("exchange.dlx", "direct", true);
+channel.exchangeDeclare("exchange.normal", "fanout", true);
+Map<String, Object> args = new HashMap<>();
+// 设置过期时间
+args.put("x-messge-ttl", 10000);
+// 指定死信交换器
+args.put("x-dead-letter-exchange", "exchange.dlx");
+// 指定死信交换器路由键
+args.put("x-dead-letter-routing-key", "routingKey");
+
+// 设置参数，来设置死信队列
+channel.queueDeclare("queue.normal", true, false, false, args);
+channel.queueBind("queue.normal", "exchange.normal", "");
+
+// 死信队列，绑定到死信交换器
+channel.queueDeclare("queue.dlx", true, false, false, null);
+channel.queueBind("queue.dlx", "exchange.dlx", "routingKey");
+```
+
+
+
+### 延迟队列
+
+通过设置消息的过期时间，结合死信队列实现
+
+
+
+### 优先级队列
+
+**具有高优先级的队列具有高的优先权，优先级高的消息优先被消费**
+
+**队列的优先级** 通过设置x-max-priority 参数来实现
+
+**消息的优先级** 通过设置 BasicProperties 来实现
+
+
+
+## 八、持久化
+
+1. 交换器持久化
+
+    声明时将 durable 设为 true，重启后交换器元数据丢失，消息不会丢失，只是不能将消息发送到这个交换器
+
+2. 队列持久化
+
+    声明时将 durable 设为 true，重启后队列元数据丢失，消息也会丢失
+
+3. 消息持久化
+
+    设置 BasicProperties 的 deliveryMode 为 2，重启后，只有队列和消息都持久化了，消息才不会丢失
+
+**即使这三个都设置持久化，并不能保证消息百分之百不丢失**
+
+**降低消息丢失的措施**
+
+（1）手动确认，将autoAck设置为false
+
+（2）设置镜像队列，**主从配置**
+
+（3）发送端使用事务（并不是数据的事务，不符合ACID）
