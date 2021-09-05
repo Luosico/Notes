@@ -376,7 +376,7 @@ GetResponse basicGet(String queue, boolean autoAck);
 
 ### 确认与拒绝
 
-**确认消息**
+**确认消息（消费者确认）**
 
 RabbitMQ通过ack参数，提供了消息确认机制。
 
@@ -428,6 +428,16 @@ RecoverOk basicRecover(boolean requeue);
 requeue 为 true，未被确认的消息会被重新加入到队列中，可能会被分配到与之前不同的消费者。
 
 requeue 为 false，同一条消息会被分配给与之前相同的消费者
+
+
+
+### 消息分发
+
+默认情况下，当一条队列有多个消费者时，队列会将收到的消息以**轮询**的分发方式发送给消费者。
+
+但是每个消费者的消费能力不一样，这样可能会导致整体吞吐量的下降。
+
+**可通过 `channel.basicQps` 来限制信道上的消费者所能保持的最大未确认消息的数量，这对于拉模式是无效的**
 
 
 
@@ -512,3 +522,70 @@ channel.queueBind("queue.dlx", "exchange.dlx", "routingKey");
 （2）设置镜像队列，**主从配置**
 
 （3）发送端使用事务（并不是数据的事务，不符合ACID）
+
+
+
+## 九、生产者确认
+
+**一般情况下，生产者发送消息给 RabbitMQ 后，是不会接受到任何返回消息的。也就是说生产者不知道消息是否正确到达服务器**
+
+**若消息在到达服务器之前已经丢失，持久化也解决不了这个问题，因为持久化是在服务器上做的**。
+
+
+
+**RabbitMQ 提供了两种方式来解决这个问题：**
+
+- **事务机制**
+- **发送方确认机制**
+
+
+
+### 事务机制
+
+**注意：这里的事务和数据库的事务的概念是不一样的**
+
+与事务有关的三个方法：
+
+- `channel.txSelect()`   将当前信道设为事务模式
+- `channel.txCommit()`   提交事务
+- `channel.txRollback`   事务回滚
+
+```java
+try{
+    channel.txSelect();
+	channel.basicPublish();   
+    // ...
+    channel.txCommit();
+}catch (Exception e){
+    channel.txRollback();
+}
+```
+
+<img src="https://raw.githubusercontent.com/Luosico/Typora/main/img/20210811224941.png" alt="image-20210811224845957" style="zoom:50%;" />
+
+事务确实能消息发送方和 RabbitMQ 之间消息确认的问题。只有消息成功被 RabbitMQ 接收，事务才能提交成功，否则便可在捕获异常后进行事务回滚。
+
+**但是使用事务机制会“吸干” RabbitMQ 的性能**
+
+**并且在发送一条消息之后发送端会阻塞，以等待 RabbitMQ 的回应**
+
+
+
+### 发送方确认机制
+
+​	将信道设置为 confirm（确认）模式，这个时候信道上发送的消息都会被指派一个**唯一的ID**（从1开始），当消息到达所有匹配的队列后，RabbitMQ 就会发送一个确认（Basic.Ack）给生产者（包含消息的唯一ID）。如果消息和队列是持久化的，那么确认消息会在消息写入磁盘之后发出。
+
+**这种方式最大的好处是异步，生产者可在发送消息后等待返回确认的同时继续发送下一条消息**
+
+```java
+try{
+    channel.confirmSelect();
+    channel.basicPublish();
+    if(!channel.waitForConfirms()){
+        // 消息发送失败
+    }catch (InterruptedException e){
+        
+    }
+}
+```
+
