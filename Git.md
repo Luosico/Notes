@@ -51,7 +51,7 @@
 	
 	git pull origin master 		将远程最新代码更新到本地，本地之前新增的不会被删除
 	git remote add origin git@github.com:Luosico/gitTest.git	本地添加一个远程仓库，origin为自定义远程仓库名字，可以任意取
-
+	
 	git remote -v				查看当前项目有哪些远程仓库
 	
 	git diff					比较工作目录和暂存区之间的差异，也就是修改后还没有暂存以来变化的内容
@@ -72,3 +72,21 @@
 		stash drop				删除暂存区的这次stash记录，每次只删除一条
 		stash pop				拥有apply一样的功能，还会自动将这次的stash记录删除
 		stash clear				清空所有暂存区的记录
+
+
+
+
+
+## 设置代理
+
+```sh
+# git 设置和取消全局代理
+git config --global http.proxy http://127.0.0.1:20000
+
+git config --global https.proxy https://127.0.0.1:20000
+
+git config --global --unset http.proxy
+
+git config --global --unset https.proxy
+```
+
